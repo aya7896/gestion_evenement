@@ -157,14 +157,8 @@
                                                 <a href="{{ route('evenements.show', $evenement->id_event) }}" class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                                                     Voir l'événement
                                                 </a>
-                                                <!-- Bouton de partage de la landing page -->
-                                                <button onclick="copyShareLink('{{ route('public.evenement.landing', $evenement->id_event) }}')" title="Partager l'événement" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white font-semibold shadow-md transition-all duration-200 ml-2">
-                                                    <i class="fas fa-share-nodes text-lg"></i>
-                                                    <span>Partager</span>
-                                                </button>
                                                 <a href="https://wa.me/?text={{ urlencode(route('public.evenement.landing', $evenement->id_event)) }}" target="_blank" title="Partager sur WhatsApp" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white font-semibold shadow-md transition-all duration-200 ml-2">
-                                                    <i class="fab fa-whatsapp text-lg"></i>
-                                                    <span>WhatsApp</span>
+                                                    Partager
                                                 </a>
                                                 @if($evenement->ateliers->count() > 0)
                                                     <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 rounded-lg text-sm border border-blue-200 dark:border-blue-800/30">

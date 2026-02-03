@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function () {
 
 // -------------------------
 // -------------------------
-// Landing page publique événement (partage)
+// Landing page publique Ã©vÃ©nement (partage)
 // -------------------------
 Route::get('/e/{evenement}', [App\Http\Controllers\EvenementController::class, 'publicLanding'])
     ->name('public.evenement.landing');
@@ -42,6 +42,9 @@ Route::post('/e/{evenement}/inscription', [App\Http\Controllers\EvenementControl
 // Routes Evenements / Ateliers 
 // -------------------------
 Route::middleware(['auth'])->group(function () {
+
+    // CRUD Evenements (accessible aux collaborateurs uniquement)
+    Route::resource('evenements', \App\Http\Controllers\EvenementController::class);
 
     // CRUD Evenements (accessible aux collaborateurs uniquement)
     Route::resource('evenements', EvenementController::class);
@@ -68,7 +71,7 @@ Route::middleware(['auth'])->group(function () {
 // Routes Back-office Admin
 // -------------------------
 Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
-    // Mon équipe (admin_entreprise)
+    // Mon Ã©quipe (admin_entreprise)
     Route::get('equipe', [\App\Http\Controllers\Admin\EquipeController::class, 'index'])->name('equipe.index')->middleware('checkrole:admin_entreprise');
 
     // Infos entreprise (admin_entreprise)
@@ -82,7 +85,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     Route::resource('collaborateurs', CollaborateurController::class)
         ->middleware('checkrole:super_admin,admin_entreprise,collaborateur');
 
-    // Événements - Super Admin et Admin Entreprise
+    // Ã‰vÃ©nements - Super Admin et Admin Entreprise
     Route::resource('evenements', \App\Http\Controllers\Admin\EvenementController::class)
         ->middleware('checkrole:super_admin,admin_entreprise');
 

@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_event');
 
             $table->string('titre');
-            $table->enum('visibility', ['privee', 'publique'])->default('publique');
+            $table->enum('visibility', ['public', 'privé'])->default('public');
 
             $table->time('heure_debut');
             $table->time('heure_fin');
@@ -25,7 +25,7 @@ return new class extends Migration {
             $table->string('image')->nullable();
             $table->integer('capacite')->nullable();
 
-            $table->enum('status', ['actif', 'annule'])->default('actif');
+            $table->enum('status', ['actif', 'annule', 'confirmé', 'en attente'])->default('actif');
             $table->string('online_link')->nullable();
 
             $table->foreign('id_event')

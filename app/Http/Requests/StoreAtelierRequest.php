@@ -27,7 +27,6 @@ class StoreAtelierRequest extends FormRequest
             'date' => 'required|date',
             'heure_debut' => 'required|date_format:H:i',
             'heure_fin' => 'required|date_format:H:i|after:heure_debut',
-            'description' => 'nullable|string',
             'capacite' => 'required|integer|min:1',
             'banniere' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];

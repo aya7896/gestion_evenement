@@ -32,7 +32,7 @@ class EvenementController extends Controller
     public function publicLanding($id)
     {
         $evenement = Evenement::with(['ateliers', 'entreprise'])->where('id_event', $id)->firstOrFail();
-        return view('evenements.public_landing', compact('evenement'));
+        return view('landing.index', compact('evenement'));
     }
     /**
      * Vérifie si l'utilisateur est super admin
@@ -121,7 +121,7 @@ class EvenementController extends Controller
 
     public function show(Evenement $evenement)
     {
-        // Vérifier l'accès pour Admin Entreprise
+        // Vérifier l'accèss pour Admin Entreprise
         if (!$this->isSuperAdmin()) {
             $entrepriseId = $this->getUserEntrepriseId();
             if ($evenement->id_entreprise !== $entrepriseId) {
@@ -156,7 +156,7 @@ class EvenementController extends Controller
      */
     public function downloadPlaquette(Evenement $evenement)
     {
-        // Vérifier l'accès pour Admin Entreprise
+        // Vérifier l'accèss pour Admin Entreprise
         if (!$this->isSuperAdmin()) {
             $entrepriseId = $this->getUserEntrepriseId();
             if ($evenement->id_entreprise !== $entrepriseId) {

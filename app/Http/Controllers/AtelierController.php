@@ -30,9 +30,9 @@ class AtelierController extends Controller
     public function create(Evenement $evenement = null)
     {
         $user = Auth::user();
-        // Super admin ne peut plus créer d'atelier
+        // Super admin ne peut plus crÃ©er d'atelier
         if ($user->role === 'super_admin') {
-            abort(403, 'Le super administrateur ne peut pas créer d\'atelier.');
+            abort(403, 'Le super administrateur ne peut pas crÃ©er d\'atelier.');
         }
         $collab = $user->collaborateurs()->first();
         if (!$collab || $collab->role !== 'admin_entreprise') abort(403);
@@ -46,19 +46,18 @@ class AtelierController extends Controller
     {
         $user = Auth::user();
         $evenement = Evenement::findOrFail($request->id_event);
-        // Super admin ne peut plus créer d'atelier
+        // Super admin ne peut plus crÃ©er d'atelier
         if ($user->role === 'super_admin') {
-            abort(403, 'Le super administrateur ne peut pas créer d\'atelier.');
+            abort(403, 'Le super administrateur ne peut pas crÃ©er d\'atelier.');
         }
         $collab = $user->collaborateurs()->first();
         if (!$collab || $collab->role !== 'admin_entreprise' || $evenement->id_entreprise !== $collab->id_entreprise) {
             abort(403);
         }
         Atelier::create(array_merge($request->validated(), [
-            'id_event' => $evenement->id_event,
-            'banniere' => $request->banniere ? $request->banniere->store('bannieres') : null,
+            'banniere' => $request->banniere ? $request->banniere->store('bannieres', 'public') : null,
         ]));
-        return redirect()->route('ateliers.index')->with('success', 'Atelier ajouté');
+        return redirect()->route('ateliers.index')->with('success', 'Atelier ajoutÃ©');
     }
 
     public function edit(Evenement $evenement, Atelier $atelier)
@@ -83,7 +82,7 @@ class AtelierController extends Controller
         $atelier->update(array_merge($request->validated(), [
             'banniere' => $request->banniere ? $request->banniere->store('bannieres', 'public') : $atelier->banniere,
         ]));
-        return redirect()->route('evenements.show', $evenement->id_event)->with('success', 'Atelier mis à jour');
+        return redirect()->route('evenements.show', $evenement->id_event)->with('success', 'Atelier mis Ã  jour');
     }
 
     public function show(Evenement $evenement, Atelier $atelier)
@@ -100,23 +99,23 @@ class AtelierController extends Controller
         }
         $this->authorizeAccess($evenement);
         $atelier->delete();
-        return redirect()->route('evenements.show', $evenement->id_event)->with('success', 'Atelier supprimé');
+        return redirect()->route('evenements.show', $evenement->id_event)->with('success', 'Atelier supprimÃ©');
     }
 
     /**
-     * Helper technique pour centraliser la vérification des droits.
+     * Helper technique pour centraliser la vÃ©rification des droits.
      */
     private function authorizeAccess(Evenement $evenement)
     {
         $user = Auth::user();
-        // Super admin ne peut plus accéder à la modification des ateliers
+        // Super admin ne peut plus accÃ©der Ã  la modification des ateliers
         if ($user->role === 'super_admin') {
-            abort(403, 'Le super administrateur ne peut pas accéder à cette action.');
+            abort(403, 'Le super administrateur ne peut pas accÃ©der Ã  cette action.');
         }
-        // Sinon, on vérifie si c'est l'admin de l'entreprise concernée
+        // Sinon, on vÃ©rifie si c'est l'admin de l'entreprise concernÃ©e
         $collab = $user->collaborateurs()->first();
         if (!$collab || $collab->role !== 'admin_entreprise' || $collab->id_entreprise !== $evenement->id_entreprise) {
-            abort(403, "Vous n'avez pas les droits nécessaires.");
+            abort(403, "Vous n'avez pas les droits nÃ©cessaires.");
         }
     }
 }

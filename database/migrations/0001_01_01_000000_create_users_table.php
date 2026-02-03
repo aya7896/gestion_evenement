@@ -20,10 +20,11 @@ return new class extends Migration
             $table->string('telephone')->nullable();
             $table->string('password');
 
-                $table->enum('role', [
+            $table->enum('role', [
                 'super_admin',
-                'participant', 
-                'collaborateur', 
+                'participant',
+                'collaborateur',
+                'admin_entreprise',
             ])->default('participant');
 
             $table->rememberToken();

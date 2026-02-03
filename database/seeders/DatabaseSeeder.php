@@ -49,15 +49,14 @@ class DatabaseSeeder extends Seeder
             'role' => 'participant',
         ]);
 
-        // Seed Entreprises, Evenements, Ateliers
+        // Seed Entreprises, Collaborateurs de démo AVANT les événements
         $this->call([
             EntrepriseSeeder::class,
-            EvenementSeeder::class,
-            AtelierSeeder::class,
-            // Seeders de démo (clés à partir de 100)
             EntrepriseDemoSeeder::class,
             AdminEntrepriseDemoSeeder::class,
             CollaborateurDemoSeeder::class,
+            EvenementSeeder::class,
+            AtelierSeeder::class,
             EvenementDemoSeeder::class,
         ]);
     }

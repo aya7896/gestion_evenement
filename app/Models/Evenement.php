@@ -42,7 +42,7 @@ class Evenement extends Model
         'validation_superAdmin' => 'boolean',
     ];
 
-    // 🔹 Relations
+    // ðŸ”¹ Relations
 
     public function entreprise()
     {

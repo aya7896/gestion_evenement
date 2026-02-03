@@ -23,64 +23,13 @@ class EvenementSeeder extends Seeder
         // Attendre que les entreprises et collaborateurs soient créés
         // Pour l'instant, utiliser des IDs fixes car les collaborateurs ne sont pas encore créés
         // Mais vérifier que les IDs existent dans la base de données
-        $collaborateurs = \App\Models\Collaborateur::pluck('id_Collaborateur')->toArray();
-        $entreprises = \App\Models\Entreprise::pluck('id_entreprise')->toArray();
-        
-        // Si les tableaux sont vides, utiliser des IDs par défaut
-        if (empty($collaborateurs)) {
-            $collaborateurs = [1, 2, 3, 4, 5];
-        }
-        if (empty($entreprises)) {
-            $entreprises = [1, 2, 3, 4, 5];
+        $collaborateurId = \App\Models\Collaborateur::query()->value('id_Collaborateur');
+        $entrepriseId = \App\Models\Entreprise::query()->value('id_entreprise');
+        if (!$collaborateurId || !$entrepriseId) {
+            throw new \Exception('Aucun collaborateur ou entreprise trouvé pour lier les événements.');
         }
         
-        // Vérifier que les IDs existent réellement dans la base de données
-        // Si non, utiliser des IDs par défaut
-        if (!empty($collaborateurs)) {
-            $existingCollaborateurs = \App\Models\Collaborateur::whereIn('id_Collaborateur', $collaborateurs)->pluck('id_Collaborateur')->toArray();
-            if (empty($existingCollaborateurs)) {
-                $collaborateurs = [1, 2, 3, 4, 5];
-            } else {
-                $collaborateurs = $existingCollaborateurs;
-            }
-        } else {
-            $collaborateurs = [1, 2, 3, 4, 5];
-        }
-        
-        if (!empty($entreprises)) {
-            $existingEntreprises = \App\Models\Entreprise::whereIn('id_entreprise', $entreprises)->pluck('id_entreprise')->toArray();
-            if (empty($existingEntreprises)) {
-                $entreprises = [1, 2, 3, 4, 5];
-            } else {
-                $entreprises = $existingEntreprises;
-            }
-        } else {
-            $entreprises = [1, 2, 3, 4, 5];
-        }
-        
-        // Vérifier que les IDs existent réellement dans la base de données
-        // Si non, utiliser des IDs par défaut
-        if (!empty($collaborateurs)) {
-            $existingCollaborateurs = \App\Models\Collaborateur::whereIn('id_Collaborateur', $collaborateurs)->pluck('id_Collaborateur')->toArray();
-            if (empty($existingCollaborateurs)) {
-                $collaborateurs = [1, 2, 3, 4, 5];
-            } else {
-                $collaborateurs = $existingCollaborateurs;
-            }
-        } else {
-            $collaborateurs = [1, 2, 3, 4, 5];
-        }
-        
-        if (!empty($entreprises)) {
-            $existingEntreprises = \App\Models\Entreprise::whereIn('id_entreprise', $entreprises)->pluck('id_entreprise')->toArray();
-            if (empty($existingEntreprises)) {
-                $entreprises = [1, 2, 3, 4, 5];
-            } else {
-                $entreprises = $existingEntreprises;
-            }
-        } else {
-            $entreprises = [1, 2, 3, 4, 5];
-        }
+        // Tous les événements utiliseront ces IDs valides
         $types = ['Conférence', 'Atelier', 'Séminaire', 'Workshop', 'Formation'];
         $modes = ['présentiel', 'en ligne', 'hybride'];
         $statuses = ['confirmé', 'en attente', 'annulé'];
@@ -96,13 +45,13 @@ class EvenementSeeder extends Seeder
                 $day = rand(1, $daysInMonth);
                 $hour = rand(9, 17);
                 $duration = rand(2, 6);
-                
+
                 $startDate = Carbon::create($monthStart->year, $monthStart->month, $day, $hour);
                 $endDate = $startDate->copy()->addHours($duration);
 
                 Evenement::create([
-                    'id_Collaborateur' => $collaborateurs[array_rand($collaborateurs)],
-                    'id_entreprise' => $entreprises[array_rand($entreprises)],
+                    'id_Collaborateur' => $collaborateurId,
+                    'id_entreprise' => $entrepriseId,
                     'titre' => $this->generateEventTitle($types[array_rand($types)], $monthData['month']),
                     'capacite' => $monthData['baseCapacity'] + rand(0, 100),
                     'description' => $this->generateDescription(),
@@ -126,8 +75,8 @@ class EvenementSeeder extends Seeder
 
         // Ajouter quelques événements récents pour tester
         Evenement::create([
-            'id_Collaborateur' => 1,
-            'id_entreprise' => 1,
+            'id_Collaborateur' => $collaborateurId,
+            'id_entreprise' => $entrepriseId,
             'titre' => 'Conférence Tech 2026',
             'capacite' => 200,
             'description' => 'Conférence annuelle sur l’innovation technologique.',

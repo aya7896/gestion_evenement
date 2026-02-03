@@ -37,7 +37,7 @@ class User extends Authenticatable
         ];
     }
 
-    // 🔹 Relations
+    // ðŸ”¹ Relations
 
     public function superAdmin()
     {
@@ -49,7 +49,7 @@ class User extends Authenticatable
         return $this->hasMany(Collaborateur::class, 'id_user');
     }
 
-    // 🔹 Helpers
+    // ðŸ”¹ Helpers
 
     public function isSuperAdmin()
     {

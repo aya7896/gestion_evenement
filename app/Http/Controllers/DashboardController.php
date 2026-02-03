@@ -66,15 +66,15 @@ class DashboardController extends Controller
             $query->where('id_entreprise', $entrepriseId);
         }
 
-        // Total des événements
+        // Total des Ã©vÃ©nements
         $totalEvents = (clone $query)->count();
         
-        // Événements du dernier mois
+        // Ã‰vÃ©nements du dernier mois
         $lastMonth = now()->subMonth();
         $eventsLastMonth = (clone $query)->where('created_at', '>=', $lastMonth)->count();
         $eventsGrowth = $totalEvents > 0 ? round(($eventsLastMonth / $totalEvents) * 100) : 0;
 
-        // Total des participants (basé sur la capacité)
+        // Total des participants (basÃ© sur la capacitÃ©)
         $totalParticipants = (clone $query)->sum('capacite'); 
         $participantsLastMonth = (clone $query)
             ->where('created_at', '>=', $lastMonth)
@@ -116,19 +116,19 @@ class DashboardController extends Controller
             ? round(($totalParticipants / $totalCapacity) * 100) 
             : 0;
 
-        // Données pour les graphiques
+        // DonnÃ©es pour les graphiques
         $revenueChartData = $this->getMonthlyEventsData($query, 6);
         $revenueChartMonths = $revenueChartData['months'];
         $revenueChartValues = $revenueChartData['values'];
 
         // Distribution des statuts (exemple)
         $statusDistribution = [
-            'À venir' => (clone $query)->where('date_heure_debut', '>', now())->count(),
+            'Ã€ venir' => (clone $query)->where('date_heure_debut', '>', now())->count(),
             'En cours' => (clone $query)
                 ->where('date_heure_debut', '<=', now())
                 ->where('date_heure_fin', '>=', now())
                 ->count(),
-            'Terminé' => (clone $query)->where('date_heure_fin', '<', now())->count(),
+            'TerminÃ©' => (clone $query)->where('date_heure_fin', '<', now())->count(),
         ];
 
         $stats = [
@@ -142,14 +142,14 @@ class DashboardController extends Controller
             'today_registrations_growth' => $todayRegistrationsGrowth,
             'week_events' => $weekEvents,
             'week_participations' => $weekParticipations,
-            'fill_rate' => min($fillRate, 100), // Cap à 100%
+            'fill_rate' => min($fillRate, 100), // Cap Ã  100%
             'revenue_chart_data' => $revenueChartValues,
             'revenue_chart_months' => $revenueChartMonths,
             'status_distribution_values' => array_values($statusDistribution),
             'status_distribution_labels' => array_keys($statusDistribution),
         ];
 
-        // Statistiques spécifiques selon le rôle
+        // Statistiques spÃ©cifiques selon le rÃ´le
         if ($isSuperAdmin) {
             $stats['entreprises'] = Entreprise::count();
             $stats['collaborateurs'] = Collaborateur::count();
@@ -168,7 +168,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Obtenir les données mensuelles des événements
+     * Obtenir les donnÃ©es mensuelles des Ã©vÃ©nements
      */
     private function getMonthlyEventsData($query, int $months = 6): array
     {

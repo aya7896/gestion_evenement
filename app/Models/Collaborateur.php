@@ -18,7 +18,7 @@ class Collaborateur extends Model
         'role',
     ];
 
-    // 🔹 Relations
+    // ðŸ”¹ Relations
 
     public function user()
     {
