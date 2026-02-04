@@ -91,9 +91,7 @@
                         <a href="{{ route('evenements.show', $atelier->evenement) }}" class="btn btn-primary flex-1">
                             <i class="fas fa-calendar-alt mr-2"></i>Voir l'événement
                         </a>
-                        
-                        @if(auth()->user()->role === 'super_admin' || auth()->user()->collaborateurs()->first()->role === 'admin_entreprise')
-                        @if(auth()->user()->collaborateurs()->first() && auth()->user()->collaborateurs()->first()->role === 'admin_entreprise')
+                        @if(auth()->user()->role === 'super_admin')
                             <a href="{{ route('evenements.ateliers.edit', [$atelier->evenement, $atelier]) }}" class="btn btn-secondary flex-1">
                                 <i class="fas fa-edit mr-2"></i>Modifier
                             </a>

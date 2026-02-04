@@ -81,6 +81,7 @@
                     </span>
                 </a>
                 <!-- Bouton d'ajout d'événement -->
+                @if (auth()->user()->role !== 'super_admin')
                 <a href="{{ route('evenements.create') }}"
                    class="flex items-center mt-2 px-4 py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow transition group relative">
                     <div class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
@@ -91,6 +92,7 @@
                         Ajouter un événement
                     </span>
                 </a>
+                @endif
             @endif
 
             <!-- Ateliers -->
