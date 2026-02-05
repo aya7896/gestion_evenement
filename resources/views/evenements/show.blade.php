@@ -13,12 +13,12 @@
                 @endphp
 
                 @if($imagePublic)
-                    <div class="w-full h-80 overflow-hidden rounded-lg -mx-6 mt-0">
-                        <img src="{{ asset('storage/' . $evenement->image) }}" alt="{{ $evenement->titre }}" class="w-full h-full object-cover">
+                    <div class="w-full h-80 overflow-hidden rounded-lg -mx-6 mt-0 bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                        <img src="{{ asset('storage/' . $evenement->image) }}" alt="{{ $evenement->titre }}" class="w-full h-full object-contain">
                     </div>
                 @elseif($imageAbsolute)
-                    <div class="w-full h-80 overflow-hidden rounded-lg -mx-6 mt-0">
-                        <img src="{{ $evenement->image }}" alt="{{ $evenement->titre }}" class="w-full h-full object-cover">
+                    <div class="w-full h-80 overflow-hidden rounded-lg -mx-6 mt-0 bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                        <img src="{{ $evenement->image }}" alt="{{ $evenement->titre }}" class="w-full h-full object-contain">
                     </div>
                 @else
                     <div class="w-full h-80 bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center rounded-lg -mx-6 mt-0">
@@ -33,17 +33,14 @@
                 
                 <!-- Badges d'état -->
                 <div class="absolute top-4 right-4 flex space-x-2">
-                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ $evenement->status === 'published' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        <svg class="w-4 h-4 mr-1 {{ $evenement->status === 'published' ? 'text-green-500' : 'text-red-500' }}" fill="currentColor" viewBox="0 0 20 20">
+                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ $evenement->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        {{ $evenement->status === 'active' ? 'Actif' : 'Inactif' }}
+                    </span>
+                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ $evenement->validation_superAdmin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                        <svg class="w-4 h-4 mr-1 {{ $evenement->validation_superAdmin ? 'text-green-500' : 'text-red-500' }}" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
-                        {{ ucfirst($evenement->status) }}
-                    </span>
-                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ $evenement->validation_superAdmin ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' }}">
-                        <svg class="w-4 h-4 mr-1 {{ $evenement->validation_superAdmin ? 'text-blue-500' : 'text-yellow-500' }}" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ $evenement->validation_superAdmin ? 'Validé' : 'En attente' }}
+                        {{ $evenement->validation_superAdmin ? 'Validé' : 'Non validé' }}
                     </span>
                 </div>
             </div>
@@ -109,9 +106,9 @@
                             <div>
                                 <p class="text-sm font-medium text-gray-600">Durée</p>
                                 <p class="text-2xl font-bold text-gray-900">
-                                    {{ \Illuminate\Support\Carbon::parse($evenement->date_heure_debut)->diffInHours(\Illuminate\Support\Carbon::parse($evenement->date_heure_fin)) }}
+                                    {{ abs(\Illuminate\Support\Carbon::parse($evenement->date_heure_debut)->diffInDays(\Illuminate\Support\Carbon::parse($evenement->date_heure_fin))) }}
                                 </p>
-                                <p class="text-xs text-gray-500">heures</p>
+                                <p class="text-xs text-gray-500">jours</p>
                             </div>
                             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,6 +128,21 @@
                             <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Inscriptions</p>
+                                <p class="text-2xl font-bold text-gray-900">{{ $evenement->inscriptions->count() }}</p>
+                                <p class="text-xs text-gray-500">participant(s)</p>
+                            </div>
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm0 0h6v-2a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                                 </svg>
                             </div>
                         </div>
@@ -246,6 +258,82 @@
             </x-card>
         @endif
 
+        <!-- Inscriptions -->
+        <x-card>
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Inscriptions à l'événement</h2>
+                    <p class="text-gray-600">{{ $evenement->inscriptions->count() }} personne(s) inscrite(s)</p>
+                </div>
+            </div>
+
+            @if($evenement->inscriptions->isEmpty())
+                <div class="text-center py-12">
+                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm0 0h6v-2a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <p class="text-gray-500 text-lg">Aucune inscription pour cet événement</p>
+                </div>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-800">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Participant
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Email
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Entreprise
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Poste
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Date d'inscription
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                            @foreach($evenement->inscriptions as $inscription)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ $inscription->user->name ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                                        {{ $inscription->user->email ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                                        {{ $inscription->company ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                                        {{ $inscription->poste ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                                        @if($inscription->date_ins)
+                                            {{ \Carbon\Carbon::parse($inscription->date_ins)->format('d/m/Y H:i') }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <a href="#" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                            Voir détails
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </x-card>
+
         <!-- Ateliers -->
         <x-card>
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
@@ -281,8 +369,8 @@
                                     <p class="text-sm text-gray-600 mt-1">{{ $atelier->sujet }}</p>
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ $atelier->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                        <svg class="w-4 h-4 mr-1 {{ $atelier->status === 'active' ? 'text-green-500' : 'text-red-500' }}" fill="currentColor" viewBox="0 0 20 20">
+                                    <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full {{ $atelier->status === 'actif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        <svg class="w-4 h-4 mr-1 {{ $atelier->status === 'actif' ? 'text-green-500' : 'text-red-500' }}" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                         </svg>
                                         {{ ucfirst($atelier->status) }}

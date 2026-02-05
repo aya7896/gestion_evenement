@@ -37,7 +37,7 @@ class User extends Authenticatable
         ];
     }
 
-    // ðŸ”¹ Relations
+    // 🔹 Relations
 
     public function superAdmin()
     {
@@ -49,7 +49,17 @@ class User extends Authenticatable
         return $this->hasMany(Collaborateur::class, 'id_user');
     }
 
-    // ðŸ”¹ Helpers
+    public function inscriptions()
+    {
+        return $this->hasMany(Inscription::class, 'id_user', 'id_user');
+    }
+
+    // 🔹 Helpers
+
+    public function getNameAttribute()
+    {
+        return trim("{$this->nom} {$this->prenom}");
+    }
 
     public function isSuperAdmin()
     {
@@ -59,5 +69,10 @@ class User extends Authenticatable
     public function isCollaborateur()
     {
         return $this->role === 'collaborateur';
+    }
+
+    public function isParticipant()
+    {
+        return $this->role === 'participant';
     }
 }

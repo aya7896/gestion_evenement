@@ -57,19 +57,12 @@
                 </div>
 
                 <div>
-                    <label for="taille_entreprise" class="block text-sm font-medium text-gray-700 mb-2">Taille de l'entreprise</label>
-                    <select name="taille_entreprise" id="taille_entreprise" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">Sélectionner une taille</option>
-                        <option value="1-10" {{ old('taille_entreprise', $entreprise->taille_entreprise) == '1-10' ? 'selected' : '' }}>1-10 employés</option>
-                        <option value="11-50" {{ old('taille_entreprise', $entreprise->taille_entreprise) == '11-50' ? 'selected' : '' }}>11-50 employés</option>
-                        <option value="51-200" {{ old('taille_entreprise', $entreprise->taille_entreprise) == '51-200' ? 'selected' : '' }}>51-200 employés</option>
-                        <option value="201-500" {{ old('taille_entreprise', $entreprise->taille_entreprise) == '201-500' ? 'selected' : '' }}>201-500 employés</option>
-                        <option value="500+" {{ old('taille_entreprise', $entreprise->taille_entreprise) == '500+' ? 'selected' : '' }}>Plus de 500 employés</option>
-                    </select>
-                    @error('taille_entreprise')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <label for="taille_entreprise" class="block text-sm font-medium text-gray-700 mb-2">Taille de l'entreprise (calculée automatiquement)</label>
+                    <input type="text" id="taille_entreprise" 
+                           value="{{ $entreprise->taille_entreprise }}" 
+                           disabled
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-600">
+                    <p class="mt-1 text-sm text-gray-500">La taille est calculée automatiquement en fonction du nombre d'employés.</p>
                 </div>
 
                 <div class="md:col-span-2">
@@ -86,6 +79,50 @@
                     <input type="text" name="ville" id="ville" value="{{ old('ville', $entreprise->ville) }}" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     @error('ville')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="code_postal" class="block text-sm font-medium text-gray-700 mb-2">Code postal</label>
+                    <input type="text" name="code_postal" id="code_postal" value="{{ old('code_postal', $entreprise->code_postal) }}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    @error('code_postal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="pays" class="block text-sm font-medium text-gray-700 mb-2">Pays</label>
+                    <input type="text" name="pays" id="pays" value="{{ old('pays', $entreprise->pays) }}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    @error('pays')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="type_entreprise" class="block text-sm font-medium text-gray-700 mb-2">Type d'entreprise</label>
+                    <select name="type_entreprise" id="type_entreprise" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Sélectionner un type</option>
+                        <option value="startup" {{ old('type_entreprise', $entreprise->type_entreprise) == 'startup' ? 'selected' : '' }}>Startup</option>
+                        <option value="PME" {{ old('type_entreprise', $entreprise->type_entreprise) == 'PME' ? 'selected' : '' }}>PME</option>
+                        <option value="ETI" {{ old('type_entreprise', $entreprise->type_entreprise) == 'ETI' ? 'selected' : '' }}>ETI</option>
+                        <option value="grand groupe" {{ old('type_entreprise', $entreprise->type_entreprise) == 'grand groupe' ? 'selected' : '' }}>Grand Groupe</option>
+                        <option value="administration" {{ old('type_entreprise', $entreprise->type_entreprise) == 'administration' ? 'selected' : '' }}>Administration</option>
+                        <option value="association" {{ old('type_entreprise', $entreprise->type_entreprise) == 'association' ? 'selected' : '' }}>Association</option>
+                    </select>
+                    @error('type_entreprise')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="effectif" class="block text-sm font-medium text-gray-700 mb-2">Effectif</label>
+                    <input type="number" name="effectif" id="effectif" value="{{ old('effectif', $entreprise->effectif) }}" min="1"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    @error('effectif')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

@@ -125,78 +125,138 @@
                     </div>
                 @endforeach
             @else
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach($ateliers as $atelier)
-                        <div class="glass-card group hover:translate-y-[-4px] transition-all duration-300">
-                            <div class="p-6">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div class="flex-1">
-                                        <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-orange-500 transition-colors">
-                                            {{ $atelier->titre }}
-                                        </h3>
-                                        <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
-                                            {{ $atelier->description }}
-                                        </p>
-                                    </div>
-                                    <div class="ml-4 bg-gradient-to-br from-orange-50 to-rose-50 dark:from-slate-800 dark:to-slate-700 p-3 rounded-xl shadow-sm border border-orange-100/50 dark:border-slate-600">
-                                        <i class="fas fa-chalkboard-teacher text-orange-500 text-lg"></i>
-                                    </div>
-                                </div>
-                                <div class="bg-slate-50/50 dark:bg-slate-800/50 rounded-xl p-3 mb-4 border border-slate-100 dark:border-slate-700">
-                                    <div class="flex items-center text-sm">
-                                        <i class="fas fa-calendar-alt mr-2 text-orange-500/70"></i>
-                                        <span class="font-medium text-slate-700 dark:text-slate-300">Événement :</span>
-                                        <span class="ml-2 text-slate-900 dark:text-white font-semibold">{{ $atelier->evenement->titre }}</span>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-3 mb-5">
-                                    <div class="bg-white/40 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-center">
-                                        <div class="flex items-center justify-center text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                            <i class="fas fa-calendar-day mr-1.5 text-orange-500/60"></i>
-                                            <span>Date</span>
+                @php $isAdminEntreprise = auth()->user()->collaborateurs()->first()?->role === 'admin_entreprise'; @endphp
+                @if($isAdminEntreprise)
+                    {{-- Grouper les ateliers par événement pour l'admin_entreprise --}}
+                    @php $groupedByEvent = $ateliers->groupBy('evenement.id_event'); @endphp
+                    @foreach($groupedByEvent as $eventId => $ateliersByEvent)
+                        @php $event = $ateliersByEvent->first()->evenement; @endphp
+                        <div class="mb-6">
+                            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-slate-700 dark:to-slate-800 border border-blue-200 dark:border-slate-700 rounded-lg p-3 mb-2">
+                                <div class="flex items-center gap-2 justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 bg-blue-500 dark:bg-blue-600 rounded flex items-center justify-center">
+                                            <i class="fas fa-calendar-alt text-white text-xs"></i>
                                         </div>
-                                        <div class="text-sm font-bold text-slate-900 dark:text-white">
-                                            {{ \Illuminate\Support\Carbon::parse($atelier->date)->format('d/m/Y') }}
+                                        <div>
+                                            <h4 class="text-base font-semibold text-blue-800 dark:text-blue-200 mb-0">{{ $event->titre }}</h4>
+                                            <p class="text-xs text-blue-600 dark:text-blue-300 mb-0">{{ $event->date_heure_debut ? $event->date_heure_debut->format('d/m/Y') : '' }}</p>
                                         </div>
                                     </div>
-                                    <div class="bg-white/40 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-center">
-                                        <div class="flex items-center justify-center text-xs text-slate-500 dark:text-slate-400 mb-1">
-                                            <i class="fas fa-clock mr-1.5 text-orange-500/60"></i>
-                                            <span>Horaire</span>
-                                        </div>
-                                        <div class="text-sm font-bold text-slate-900 dark:text-white">
-                                            {{ $atelier->heure_debut }}
-                                        </div>
+                                    <div>
+                                        <a href="{{ route('evenements.show', $event->id_event) }}" class="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-orange-500 text-white text-sm">Voir l'événement</a>
                                     </div>
                                 </div>
-                                <div class="flex items-center justify-between mb-6">
-                                    <div class="flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 rounded-full">
-                                        <i class="fas fa-users mr-2 text-green-600 text-xs"></i>
-                                        <span class="text-xs font-bold text-green-700 dark:text-green-400">
-                                            {{ $atelier->capacite }} places
-                                        </span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @foreach($ateliersByEvent as $atelier)
+                                    <div class="glass-card group hover:translate-y-[-4px] transition-all duration-300">
+                                        <div class="p-6">
+                                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-orange-500 transition-colors">{{ $atelier->titre }}</h3>
+                                            <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{{ $atelier->description }}</p>
+                                            <div class="grid grid-cols-2 gap-3 mb-5 mt-3">
+                                                <div class="bg-white/40 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-center">
+                                                    <div class="flex items-center justify-center text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                        <i class="fas fa-calendar-day mr-1.5 text-orange-500/60"></i>
+                                                        <span>Date</span>
+                                                    </div>
+                                                    <div class="text-sm font-bold text-slate-900 dark:text-white">
+                                                        {{ \Illuminate\Support\Carbon::parse($atelier->date)->format('d/m/Y') }}
+                                                    </div>
+                                                </div>
+                                                <div class="bg-white/40 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-center">
+                                                    <div class="flex items-center justify-center text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                        <i class="fas fa-clock mr-1.5 text-orange-500/60"></i>
+                                                        <span>Horaire</span>
+                                                    </div>
+                                                    <div class="text-sm font-bold text-slate-900 dark:text-white">
+                                                        {{ $atelier->heure_debut }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between mb-6">
+                                                <div class="flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 rounded-full">
+                                                    <i class="fas fa-users mr-2 text-green-600 text-xs"></i>
+                                                    <span class="text-xs font-bold text-green-700 dark:text-green-400">{{ $atelier->capacite }} places</span>
+                                                </div>
+                                                <span class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-xs font-medium border border-slate-200 dark:border-slate-700">{{ $atelier->type }}</span>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <a href="{{ route('evenements.show', $atelier->evenement) }}" class="btn-secondary flex-1 inline-flex justify-center items-center py-2 text-sm">
+                                                    <i class="fas fa-eye mr-6"></i>voir événement
+                                                </a>
+                                                @if(auth()->user()->role === 'super_admin' || auth()->user()->collaborateurs()->first()->role === 'admin_entreprise')
+                                                    <a href="{{ route('evenements.ateliers.edit', [$atelier->evenement, $atelier]) }}" class="btn-secondary flex-1 inline-flex justify-center items-center py-2 text-sm">
+                                                        <i class="fas fa-edit mr-2"></i>Modifier
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
-                                    <span class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-xs font-medium border border-slate-200 dark:border-slate-700">
-                                        {{ $atelier->type }}
-                                    </span>
-                                </div>
-                                <div class="flex gap-2">
-                                    <a href="{{ route('evenements.show', $atelier->evenement) }}" class="btn-secondary flex-1 inline-flex justify-center items-center py-2 text-sm">
-                                        <i class="fas fa-eye mr-6"></i>voir événement
-                                    </a>
-                                    @if(auth()->user()->role === 'super_admin' || auth()->user()->collaborateurs()->first()->role === 'admin_entreprise')
-                                        <a href="{{ route('evenements.ateliers.edit', [$atelier->evenement, $atelier]) }}" class="btn-secondary flex-1 inline-flex justify-center items-center py-2 text-sm">
-                                            <i class="fas fa-edit mr-2"></i>Modifier
-                                        </a>
-                                    @endif
-                                </div>
+                                @endforeach
                             </div>
                         </div>
                     @endforeach
-                </div>
-                <div class="mt-8">
-                    {{ $ateliers->links() }}
-                </div>
+                @else
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach($ateliers as $atelier)
+                            <div class="glass-card group hover:translate-y-[-4px] transition-all duration-300">
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex-1">
+                                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-orange-500 transition-colors">{{ $atelier->titre }}</h3>
+                                            <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{{ $atelier->description }}</p>
+                                        </div>
+                                        <div class="ml-4 bg-gradient-to-br from-orange-50 to-rose-50 dark:from-slate-800 dark:to-slate-700 p-3 rounded-xl shadow-sm border border-orange-100/50 dark:border-slate-600">
+                                            <i class="fas fa-chalkboard-teacher text-orange-500 text-lg"></i>
+                                        </div>
+                                    </div>
+                                    <div class="bg-slate-50/50 dark:bg-slate-800/50 rounded-xl p-3 mb-4 border border-slate-100 dark:border-slate-700">
+                                        <div class="flex items-center text-sm">
+                                            <i class="fas fa-calendar-alt mr-2 text-orange-500/70"></i>
+                                            <span class="font-medium text-slate-700 dark:text-slate-300">Événement :</span>
+                                            <span class="ml-2 text-slate-900 dark:text-white font-semibold">{{ $atelier->evenement->titre }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3 mb-5">
+                                        <div class="bg-white/40 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-center">
+                                            <div class="flex items-center justify-center text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                <i class="fas fa-calendar-day mr-1.5 text-orange-500/60"></i>
+                                                <span>Date</span>
+                                            </div>
+                                            <div class="text-sm font-bold text-slate-900 dark:text-white">{{ \Illuminate\Support\Carbon::parse($atelier->date)->format('d/m/Y') }}</div>
+                                        </div>
+                                        <div class="bg-white/40 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-center">
+                                            <div class="flex items-center justify-center text-xs text-slate-500 dark:text-slate-400 mb-1">
+                                                <i class="fas fa-clock mr-1.5 text-orange-500/60"></i>
+                                                <span>Horaire</span>
+                                            </div>
+                                            <div class="text-sm font-bold text-slate-900 dark:text-white">{{ $atelier->heure_debut }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between mb-6">
+                                        <div class="flex items-center px-3 py-1.5 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30 rounded-full">
+                                            <i class="fas fa-users mr-2 text-green-600 text-xs"></i>
+                                            <span class="text-xs font-bold text-green-700 dark:text-green-400">{{ $atelier->capacite }} places</span>
+                                        </div>
+                                        <span class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-full text-xs font-medium border border-slate-200 dark:border-slate-700">{{ $atelier->type }}</span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <a href="{{ route('evenements.show', $atelier->evenement) }}" class="btn-secondary flex-1 inline-flex justify-center items-center py-2 text-sm">
+                                            <i class="fas fa-eye mr-6"></i>voir événement
+                                        </a>
+                                        @if(auth()->user()->role === 'super_admin' || auth()->user()->collaborateurs()->first()->role === 'admin_entreprise')
+                                            <a href="{{ route('evenements.ateliers.edit', [$atelier->evenement, $atelier]) }}" class="btn-secondary flex-1 inline-flex justify-center items-center py-2 text-sm">
+                                                <i class="fas fa-edit mr-2"></i>Modifier
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="mt-8">{{ $ateliers->links() }}</div>
+                @endif
             @endif
         @endif
     </div>

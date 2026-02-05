@@ -13,6 +13,12 @@ class AtelierController extends Controller
     public function index(Evenement $evenement = null)
     {
         if ($evenement) {
+            // Si un événement est fourni, vérifier les droits puis lister ses ateliers
+            $user = Auth::user();
+            if ($user->role !== 'super_admin') {
+                $this->authorizeAccess($evenement);
+            }
+
             $ateliers = $evenement->ateliers()->paginate(10);
             return view('ateliers.index', [
                 'evenement' => $evenement,
@@ -21,7 +27,21 @@ class AtelierController extends Controller
         }
 
         // Show all ateliers when no evenement is provided
-        $ateliers = Atelier::with('evenement')->paginate(10);
+        $user = Auth::user();
+        if ($user->role === 'super_admin') {
+            $ateliers = Atelier::with('evenement')->paginate(10);
+        } else {
+            // Filtrer les ateliers pour ne montrer que ceux de l'entreprise de l'admin
+            $collab = $user->collaborateurs()->first();
+            if (!$collab || $collab->role !== 'admin_entreprise') {
+                abort(403);
+            }
+
+            $entrepriseId = $collab->id_entreprise;
+            $ateliers = Atelier::whereHas('evenement', function ($q) use ($entrepriseId) {
+                $q->where('id_entreprise', $entrepriseId);
+            })->with('evenement')->paginate(10);
+        }
         return view('ateliers.index', [
             'ateliers' => $ateliers
         ]);
@@ -118,4 +138,13 @@ class AtelierController extends Controller
             abort(403, "Vous n'avez pas les droits nÃ©cessaires.");
         }
     }
-}
+    /**
+     * Affiche les ateliers d'un événement (page publique du landing)
+     */
+    public function publicList(Evenement $evenement)
+    {
+        // Charger les ateliers avec l'événement
+        $evenement->load(['ateliers', 'entreprise']);
+
+        return view('landing.ateliers', compact('evenement'));
+    }}

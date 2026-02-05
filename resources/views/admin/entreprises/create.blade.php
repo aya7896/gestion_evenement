@@ -27,7 +27,28 @@
             <!-- Formulaire principal -->
             <div class="glass-card animate-fade-in-up stagger-1">
                 <div class="p-8">
-                    <form action="{{ route('admin.entreprises.store') }}" method="POST" class="space-y-10">
+                    <!-- Messages d'erreur de validation -->
+                    @if ($errors->any())
+                        <div class="mb-8 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800">
+                            <div class="flex items-start gap-3 mb-3">
+                                <i class="fas fa-exclamation-circle text-red-600 dark:text-red-400 text-xl mt-1"></i>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-red-700 dark:text-red-300 text-lg">Erreur de validation</h3>
+                                    <p class="text-red-600 dark:text-red-400 text-sm mt-1">Veuillez corriger les champs manquants ou invalides :</p>
+                                    <ul class="mt-3 space-y-2">
+                                        @foreach ($errors->all() as $error)
+                                            <li class="text-red-600 dark:text-red-400 text-sm flex items-start gap-2">
+                                                <i class="fas fa-circle-xmark text-red-500 mt-0.5 flex-shrink-0"></i>
+                                                <span>{{ $error }}</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('admin.entreprises.store') }}" method="POST" enctype="multipart/form-data" class="space-y-10">
                         @csrf
 
                         <!-- Section: Informations de base -->
@@ -61,6 +82,26 @@
                                     @enderror
                                 </div>
 
+                                <!-- Logo (optionnel) -->
+                                <div class="form-group">
+                                    <label for="logo" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                                        <i class="fas fa-image mr-2 text-orange-500"></i>
+                                        Logo de l'entreprise
+                                        <span class="text-slate-400 text-sm ml-2">(optionnel)</span>
+                                    </label>
+                                    <input type="file"
+                                           name="logo"
+                                           id="logo"
+                                           accept="image/*"
+                                           class="w-full px-4 py-2 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 @error('logo') border-red-500 @enderror">
+                                    @error('logo')
+                                        <p class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
+                                            <i class="fas fa-exclamation-circle mr-1"></i>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+
                                 <!-- Secteur d'activité -->
                                 <div class="form-group">
                                     <label for="secteur_activite" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
@@ -72,6 +113,7 @@
                                            name="secteur_activite" 
                                            id="secteur_activite" 
                                            value="{{ old('secteur_activite') }}" 
+                                           required
                                            class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 @error('secteur_activite') border-red-500 @enderror"
                                            placeholder="Ex: Technologie, Finance, Santé">
                                     @error('secteur_activite')
@@ -94,6 +136,7 @@
                                            id="effectif" 
                                            value="{{ old('effectif') }}" 
                                            min="1"
+                                           required
                                            class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 @error('effectif') border-red-500 @enderror"
                                            placeholder="Ex: 50">
                                     @error('effectif')
@@ -112,7 +155,8 @@
                                         <span class="text-red-500">*</span>
                                     </label>
                                     <select name="type_entreprise" 
-                                            id="type_entreprise" 
+                                            id="type_entreprise"
+                                            required
                                             class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 @error('type_entreprise') border-red-500 @enderror">
                                         <option value="">Sélectionner un type</option>
                                         <option value="startup" {{ old('type_entreprise') == 'startup' ? 'selected' : '' }}>🚀 Startup</option>
@@ -152,7 +196,8 @@
                                     <input type="text" 
                                            name="adresse" 
                                            id="adresse" 
-                                           value="{{ old('adresse') }}" 
+                                           value="{{ old('adresse') }}"
+                                           required
                                            class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 @error('adresse') border-red-500 @enderror"
                                            placeholder="Ex: 123 Avenue des Champs-Élysées">
                                     @error('adresse')
@@ -173,7 +218,8 @@
                                     <input type="text" 
                                            name="ville" 
                                            id="ville" 
-                                           value="{{ old('ville') }}" 
+                                           value="{{ old('ville') }}"
+                                           required
                                            class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 @error('ville') border-red-500 @enderror"
                                            placeholder="Ex: Paris">
                                     @error('ville')
@@ -194,7 +240,8 @@
                                     <input type="text" 
                                            name="code_postal" 
                                            id="code_postal" 
-                                           value="{{ old('code_postal') }}" 
+                                           value="{{ old('code_postal') }}"
+                                           required
                                            class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 @error('code_postal') border-red-500 @enderror"
                                            placeholder="Ex: 75008">
                                     @error('code_postal')
@@ -215,7 +262,8 @@
                                     <input type="text" 
                                            name="pays" 
                                            id="pays" 
-                                           value="{{ old('pays') }}" 
+                                           value="{{ old('pays') }}"
+                                           required
                                            class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 @error('pays') border-red-500 @enderror"
                                            placeholder="Ex: France">
                                     @error('pays')
@@ -231,14 +279,15 @@
                                     <label for="telephone" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                                         <i class="fas fa-phone mr-2 text-blue-500"></i>
                                         Téléphone
+                                        <span class="text-red-500">*</span>
                                     </label>
                                     <input type="tel" 
-                                           name="telephone" 
-                                           id="telephone" 
-                                           value="{{ old('telephone') }}" 
-                                           class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 @error('telephone') border-red-500 @enderror"
+                                           name="tel" 
+                                           id="tel" 
+                                           value="{{ old('tel') }}" 
+                                           class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-900 dark:text-white placeholder-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 @error('tel') border-red-500 @enderror"
                                            placeholder="Ex: +33 1 23 45 67 89">
-                                    @error('telephone')
+                                    @error('tel')
                                         <p class="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center">
                                             <i class="fas fa-exclamation-circle mr-1"></i>
                                             {{ $message }}

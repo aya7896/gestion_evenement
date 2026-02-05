@@ -22,7 +22,11 @@ class UpdateEntrepriseRequest extends FormRequest
             'description' => 'nullable|string',
             'adresse' => 'nullable|string|max:255',
             'ville' => 'nullable|string|max:100',
+            'code_postal' => 'nullable|string|max:20',
+            'pays' => 'nullable|string|max:100',
             'secteur_activite' => 'nullable|string|max:255',
+            'type_entreprise' => 'nullable|string|max:100',
+            'effectif' => 'nullable|integer|min:1',
             'taille_entreprise' => 'nullable|string|max:50',
             'status' => 'required|in:active,inactive',
         ];

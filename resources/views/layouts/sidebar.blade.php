@@ -51,17 +51,7 @@
                         Événements
                     </span>
                 </a>
-                <!-- Bouton d'ajout d'événement -->
-                <a href="{{ route('admin.evenements.create') }}"
-                   class="flex items-center mt-2 px-4 py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow transition group relative">
-                    <div class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <span class="ml-3 whitespace-nowrap transition-all duration-300"
-                          :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">
-                        Ajouter un événement
-                    </span>
-                </a>
+                <!-- Le bouton d'ajout d'événement est déplacé vers la page des événements pour les admin_entreprise -->
             @else
                 <a href="{{ route('evenements.index') }}"
                    class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative {{ str_contains(request()->path(), 'evenements') ? 'bg-gradient-to-r from-orange-50 to-rose-50 dark:from-slate-800 dark:to-slate-800/70 text-orange-700 dark:text-orange-400 font-semibold shadow-sm' : '' }}">

@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -58,6 +59,46 @@
             </div>
             @endif
         </dl>
+
+        @if($entreprise)
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-bold mb-4">Statistiques</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <dt class="font-semibold text-slate-700 dark:text-slate-200">Nombre d'événements</dt>
+                    <dd class="text-slate-900 dark:text-white">{{ $evenementsCount }}</dd>
+                </div>
+                <div>
+                    <dt class="font-semibold text-slate-700 dark:text-slate-200">Nombre d'ateliers</dt>
+                    <dd class="text-slate-900 dark:text-white">{{ $ateliersCount }}</dd>
+                </div>
+            </div>
+
+            @if($evenements->count() > 0)
+                <div class="mt-6">
+                    <h3 class="font-semibold text-slate-700 dark:text-slate-200 mb-2">Événements :</h3>
+                    <div class="flex flex-col gap-3">
+                        @foreach($evenements as $evenement)
+                            <div class="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-neutral-800 p-3">
+                                <p class="font-medium text-slate-800 dark:text-slate-200">
+                                    {{ $evenement->titre ?? "Événement #{$evenement->id}" }}
+                                </p>
+                                <a href="{{ route('evenements.show', $evenement) }}" class="px-3 py-1.5 bg-blue-600 text-white rounded-md text-xs font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap">
+                                    Voir détails
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <div class="mt-6 text-right">
+                <a href="{{ route('admin.evenements.by-company', ['entreprise' => $entreprise->id]) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                    Voir les événements
+                </a>
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endsection

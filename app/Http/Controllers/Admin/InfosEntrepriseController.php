@@ -11,14 +11,31 @@ class InfosEntrepriseController extends Controller
     public function show()
     {
         $user = Auth::user();
-        // Si superadmin, on récupère l'id de l'entreprise depuis la requête
+        $entreprise = null;
+        $evenementsCount = 0;
+        $ateliersCount = 0;
+        $evenements = collect();
+
         if ($user->role === 'super_admin') {
             $id = request('entreprise');
-            $entreprise = $id ? \App\Models\Entreprise::find($id) : null;
+            if ($id) {
+                $entreprise = Entreprise::with(['evenements.ateliers'])->find($id);
+            }
         } else {
             $collab = $user->collaborateurs()->first();
-            $entreprise = $collab ? $collab->entreprise : null;
+            if ($collab) {
+                $entreprise = Entreprise::with(['evenements.ateliers'])->find($collab->id_entreprise);
+            }
         }
-        return view('admin.entreprises.infos', compact('entreprise'));
+
+        if ($entreprise) {
+            $evenements = $entreprise->evenements;
+            $evenementsCount = $evenements->count();
+            $ateliersCount = $evenements->reduce(function ($carry, $evenement) {
+                return $carry + $evenement->ateliers->count();
+            }, 0);
+        }
+
+        return view('admin.entreprises.infos', compact('entreprise', 'evenementsCount', 'ateliersCount', 'evenements'));
     }
 }

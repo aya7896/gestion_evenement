@@ -130,7 +130,7 @@ class EvenementController extends Controller
         }
 
         // Load related data used by the view
-        $evenement->load(['ateliers', 'entreprise']);
+        $evenement->load(['ateliers', 'entreprise', 'inscriptions.user']);
 
         // Normalize image if it's an absolute path (e.g., leftover temp path) - copy to public storage
         if ($evenement->image && preg_match('/^[A-Z]:\\\\/i', $evenement->image) && file_exists($evenement->image)) {

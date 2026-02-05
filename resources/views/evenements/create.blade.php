@@ -377,7 +377,7 @@
                                 <div>
                                     <label for="validation_superAdmin" class="form-label">
                                         <i class="fas fa-shield-alt mr-2 text-red-500"></i>
-                                        Validation Super Admin
+                                        Validation Admin
                                     </label>
                                     <select name="validation_superAdmin" 
                                             id="validation_superAdmin" 

@@ -13,14 +13,41 @@
                     </svg>
                 </button>
 
-                <!-- Logo -->
+                <!-- Logo (entreprise) -->
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-orange-500 via-rose-500 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-orange-500/30">
-                        GES
+                    @php
+                        $collab = auth()->user()->collaborateurs()->first();
+                        $entreprise = $collab ? $collab->entreprise : null;
+                        $logoPath = $entreprise?->logo ?? null;
+                        $logoExists = $logoPath ? \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath) : false;
+                    @endphp
+                    @if($logoExists)
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($logoPath) }}" alt="{{ $entreprise->nom }}" class="w-12 h-12 rounded-full object-cover shadow-lg hidden sm:block">
+                    @else
+                        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 via-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    @endif
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white hidden sm:block">
+                            Gestion  <span class="text-orange-600">Events</span>
+                        </span>
+                        @if (auth()->user()->isSuperAdmin())
+                            <span class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 dark:from-purple-900/40 dark:to-pink-900/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800/30 shadow-sm">
+                                <svg class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                Super Admin
+                            </span>
+                        @elseif (auth()->user()->isCollaborateur())
+                            <span class="hidden sm:inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-orange-100 to-rose-100 text-orange-800 dark:from-orange-900/40 dark:to-rose-900/40 dark:text-orange-300 border border-orange-200 dark:border-orange-800/30 shadow-sm">
+                                <svg class="w-3.5 h-3.5 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                </svg>
+                                Gestionnaire
+                            </span>
+                        @endif
                     </div>
-                    <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white hidden sm:block">
-                        Gestion  <span class="text-orange-600">Events</span>
-                    </span>
                 </div>
             </div>
 

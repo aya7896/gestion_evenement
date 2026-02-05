@@ -58,4 +58,14 @@ class Evenement extends Model
     {
         return $this->hasMany(Atelier::class, 'id_event');
     }
+
+    public function inscriptions()
+    {
+        return $this->belongsToMany(
+            Inscription::class,
+            'inscription_event',
+            'id_event',
+            'id_inscription'
+        )->withTimestamps();
+    }
 }

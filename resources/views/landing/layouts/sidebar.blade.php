@@ -63,7 +63,7 @@
     </div>
 
     <!-- Bouton d'inscription -->
-    <a href="#inscription" 
+    <a href="{{ route('inscription.create', $evenement->id_event) }}" 
        class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-md">
         <i class="fas fa-user-plus mr-2"></i>
         S'inscrire maintenant

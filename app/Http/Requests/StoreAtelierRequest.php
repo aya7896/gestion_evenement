@@ -24,7 +24,7 @@ class StoreAtelierRequest extends FormRequest
         return [
             'id_event' => 'required|exists:evenements,id_event',
             'titre' => 'required|string|max:255',
-            'date' => 'required|date',
+            'date' => ['required', 'date', new \App\Rules\DateInEventRange($this->input('id_event'))],
             'heure_debut' => 'required|date_format:H:i',
             'heure_fin' => 'required|date_format:H:i|after:heure_debut',
             'capacite' => 'required|integer|min:1',

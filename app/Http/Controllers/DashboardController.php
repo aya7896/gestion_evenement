@@ -20,7 +20,8 @@ class DashboardController extends Controller
         $entreprise = null;
 
         if ($user->role === 'collaborateur') {
-            $collab = $user->collaborateur ?? null;
+            // Récupérer le premier collaborateur rattaché à l'utilisateur
+            $collab = $user->collaborateurs()->first();
             if ($collab) {
                 $isAdminEntreprise = $collab->role === 'admin_entreprise';
                 $entreprise = $collab->entreprise;

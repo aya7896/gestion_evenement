@@ -48,6 +48,8 @@
                                 <option value="">Sélectionner un événement</option>
                                 @foreach($evenements as $evenement)
                                     <option value="{{ $evenement->id_event }}" 
+                                            data-start="{{ \Illuminate\Support\Carbon::parse($evenement->date_heure_debut)->format('Y-m-d') }}"
+                                            data-end="{{ \Illuminate\Support\Carbon::parse($evenement->date_heure_fin)->format('Y-m-d') }}"
                                             {{ (old('id_event') == $evenement->id_event) || (isset($selectedEvenement) && $selectedEvenement->id_event == $evenement->id_event) ? 'selected' : '' }}>
                                         {{ $evenement->titre }} - {{ \Illuminate\Support\Carbon::parse($evenement->date_heure_debut)->format('d/m/Y') }}
                                     </option>
@@ -151,4 +153,48 @@
             </div>
         </div>
     </div>
+    @push('scripts')
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const eventSelect = document.getElementById('id_event');
+        const dateInput = document.getElementById('date');
+
+        function applyEventRange(option) {
+            if (!option || !option.value) {
+                dateInput.removeAttribute('min');
+                dateInput.removeAttribute('max');
+                dateInput.removeAttribute('disabled');
+                return;
+            }
+            const start = option.dataset.start;
+            const end = option.dataset.end;
+            if (start && end) {
+                dateInput.min = start;
+                dateInput.max = end;
+                dateInput.removeAttribute('disabled');
+                // If currently selected date is outside range, clear it
+                if (dateInput.value) {
+                    if ((dateInput.value < start) || (dateInput.value > end)) {
+                        dateInput.value = '';
+                    }
+                }
+            } else {
+                dateInput.setAttribute('disabled', 'disabled');
+            }
+        }
+
+        // Apply on change
+        eventSelect.addEventListener('change', function () {
+            const opt = eventSelect.selectedOptions[0];
+            applyEventRange(opt);
+        });
+
+        // On load, if an event is pre-selected, apply its range
+        const initialOpt = eventSelect.selectedOptions[0];
+        if (initialOpt && initialOpt.value !== '') {
+            applyEventRange(initialOpt);
+        }
+    });
+    </script>
+    @endpush
 @endsection

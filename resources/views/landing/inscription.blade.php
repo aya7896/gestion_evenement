@@ -8,7 +8,7 @@
 <div class="bg-gray-100 py-4">
     <div class="container mx-auto px-4">
         <div class="flex items-center text-sm text-gray-600">
-            <a href="{{ route('landing.show', $evenement->id_event) }}" class="hover:text-blue-600">
+            <a href="{{ route('public.evenement.landing', $evenement->id_event) }}" class="hover:text-blue-600">
                 <i class="fas fa-arrow-left mr-2"></i>Retour à l'événement
             </a>
         </div>
@@ -25,7 +25,7 @@
                     <i class="fas fa-user-plus text-blue-600 text-2xl"></i>
                 </div>
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">
-                    Inscription à l'événement
+                    Formulaire d'inscription
                 </h1>
                 <p class="text-xl text-gray-600 mb-4">{{ $evenement->titre }}</p>
                 
@@ -41,11 +41,30 @@
                     </span>
                     <span>
                         <i class="fas fa-users mr-1"></i>
-                        {{ $evenement->placesRestantes() }} places restantes
+                        {{ $evenement->capacite }} places
                     </span>
                 </div>
             </div>
         </div>
+
+        <!-- Messages d'erreur -->
+        @if(session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
+                <p class="font-bold mb-2">Veuillez corriger les erreurs suivantes :</p>
+                <ul class="list-disc list-inside">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <!-- Formulaire d'inscription -->
         <form action="{{ route('inscription.store', $evenement->id_event) }}" method="POST" enctype="multipart/form-data">
@@ -95,6 +114,18 @@
                         @enderror
                     </div>
 
+                    <!-- Password -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Mot de passe <span class="text-red-500">*</span>
+                        </label>
+                        <input type="password" name="password" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('password') border-red-500 @enderror">
+                        @error('password')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Téléphone -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -108,41 +139,10 @@
                         @enderror
                     </div>
 
-                    <!-- Mot de passe -->
-                    <div>
+                    <!-- Company -->
+                    <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Mot de passe <span class="text-red-500">*</span>
-                        </label>
-                        <input type="password" name="password" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('password') border-red-500 @enderror">
-                        @error('password')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Confirmation mot de passe -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Confirmer le mot de passe <span class="text-red-500">*</span>
-                        </label>
-                        <input type="password" name="password_confirmation" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Informations professionnelles -->
-            <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <i class="fas fa-briefcase text-blue-600 mr-3"></i>
-                    Informations professionnelles
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Entreprise -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Entreprise
+                            Entreprise / Organisation
                         </label>
                         <input type="text" name="company" value="{{ old('company') }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('company') border-red-500 @enderror">
@@ -150,86 +150,75 @@
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                </div>
+            </div>
 
+            <!-- ...existing code... (remove ateliers section) -->
+
+            <!-- Checkbox One-to-One -->
+            <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+                <label class="flex items-start cursor-pointer">
+                    <input type="checkbox" name="one_to_one" id="one_to_one" value="1" {{ old('one_to_one') ? 'checked' : '' }}
+                        class="mt-1 mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <div>
+                        <span class="font-semibold text-gray-800">Je souhaite participer à une session one-to-one</span>
+                        <p class="text-sm text-gray-600">Vous serez contacté(e) pour fixer un rendez-vous personnalisé</p>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Champs avancés, affichés seulement si one-to-one est coché -->
+            <div id="advanced-fields" class="bg-white rounded-lg shadow-lg p-8 mb-6" style="display: none;">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-user-cog text-blue-600 mr-3"></i>
+                    Informations complémentaires (one-to-one)
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Photo -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Photo</label>
+                        <input type="file" name="photo" accept="image/*"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('photo') border-red-500 @enderror">
+                        @error('photo')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                     <!-- Poste -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Poste / Fonction
-                        </label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Poste</label>
                         <input type="text" name="poste" value="{{ old('poste') }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('poste') border-red-500 @enderror">
                         @error('poste')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-
-                    <!-- LinkedIn -->
+                    <!-- Lien LinkedIn -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Profil LinkedIn
-                        </label>
-                        <input type="url" name="lien_linkedin" value="{{ old('lien_linkedin') }}"
-                               placeholder="https://www.linkedin.com/in/votre-profil"
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Lien LinkedIn</label>
+                        <input type="text" name="lien_linkedin" value="{{ old('lien_linkedin') }}"
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('lien_linkedin') border-red-500 @enderror">
                         @error('lien_linkedin')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
-            </div>
-
-            <!-- Présentation et objectifs -->
-            <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                    <i class="fas fa-comments text-blue-600 mr-3"></i>
-                    À propos de vous
-                </h2>
-
-                <!-- Photo de profil -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Photo de profil
-                    </label>
-                    <div class="flex items-center space-x-4">
-                        <div id="preview" class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                            <i class="fas fa-user text-gray-400 text-3xl"></i>
-                        </div>
-                        <div class="flex-1">
-                            <input type="file" name="photo" id="photo" accept="image/*"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('photo') border-red-500 @enderror"
-                                   onchange="previewImage(event)">
-                            <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG. Taille max: 2MB</p>
-                            @error('photo')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                    <!-- Présentation -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Présentation</label>
+                        <textarea name="presentation" rows="3"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('presentation') border-red-500 @enderror">{{ old('presentation') }}</textarea>
+                        @error('presentation')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                </div>
-
-                <!-- Présentation -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Présentez-vous brièvement
-                    </label>
-                    <textarea name="presentation" rows="4"
-                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('presentation') border-red-500 @enderror"
-                              placeholder="Parlez-nous de votre parcours, vos centres d'intérêt...">{{ old('presentation') }}</textarea>
-                    @error('presentation')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Objectif -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Quel est votre objectif en participant à cet événement ?
-                    </label>
-                    <textarea name="objectif" rows="4"
-                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('objectif') border-red-500 @enderror"
-                              placeholder="Networking, apprentissage, recherche de partenaires...">{{ old('objectif') }}</textarea>
-                    @error('objectif')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
+                    <!-- Objectif -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Objectif</label>
+                        <textarea name="objectif" rows="2"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('objectif') border-red-500 @enderror">{{ old('objectif') }}</textarea>
+                        @error('objectif')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
 
@@ -245,6 +234,18 @@
                     </label>
                 </div>
 
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+                    <p class="text-sm text-green-800">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Après validation, vous recevrez par email :
+                    </p>
+                    <ul class="list-disc list-inside text-sm text-green-800 mt-2 ml-4">
+                        <li>Votre badge nominatif avec QR code</li>
+                        <li>La plaquette complète de l'événement</li>
+                        <li>Les détails de vos ateliers sélectionnés</li>
+                    </ul>
+                </div>
+
                 <button type="submit" 
                         class="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition shadow-lg">
                     <i class="fas fa-check-circle mr-2"></i>
@@ -258,18 +259,33 @@
 </div>
 
 <script>
-    function previewImage(event) {
-        const preview = document.getElementById('preview');
-        const file = event.target.files[0];
-        
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('one_to_one');
+    const advancedFields = document.getElementById('advanced-fields');
+    // List of advanced field names to toggle required
+    const requiredFields = [
+        'photo',
+        'poste',
+        'lien_linkedin',
+        'presentation',
+        'objectif'
+    ];
+    function toggleFields() {
+        const show = checkbox.checked;
+        advancedFields.style.display = show ? 'block' : 'none';
+        requiredFields.forEach(function(name) {
+            const el = document.querySelector('[name="' + name + '"]');
+            if (el) {
+                if (show) {
+                    el.setAttribute('required', 'required');
+                } else {
+                    el.removeAttribute('required');
+                }
             }
-            reader.readAsDataURL(file);
-        }
+        });
     }
+    checkbox.addEventListener('change', toggleFields);
+    toggleFields(); // Initial state
+});
 </script>
-
 @endsection

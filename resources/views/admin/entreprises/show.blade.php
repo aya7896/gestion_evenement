@@ -28,12 +28,12 @@
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden mb-8">
         <div class="bg-gradient-to-r from-blue-600 to-blue-800 p-6">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-4">
                     <div class="w-20 h-20 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                         <i class="fas fa-building text-white text-3xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-bold text-white">{{ $entreprise->nom_entreprise }}</h2>
+                        <h2 class="text-2xl font-bold text-white">{{ $entreprise->nom }}</h2>
                         <p class="text-blue-100 mt-1">{{ $entreprise->secteur_activite }}</p>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Nom</label>
-                            <p class="text-slate-900 dark:text-white font-medium">{{ $entreprise->nom_entreprise }}</p>
+                            <p class="text-slate-900 dark:text-white font-medium">{{ $entreprise->nom }}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Secteur d'activité</label>
@@ -67,11 +67,11 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Email</label>
-                            <p class="text-slate-900 dark:text-white font-medium">{{ $entreprise->email_entreprise }}</p>
+                            <p class="text-slate-900 dark:text-white font-medium">{{ $entreprise->email }}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Téléphone</label>
-                            <p class="text-slate-900 dark:text-white font-medium">{{ $entreprise->telephone_entreprise }}</p>
+                            <p class="text-slate-900 dark:text-white font-medium">{{ $entreprise->tel ?? '-' }}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">Site web</label>
@@ -86,10 +86,10 @@
                         <i class="fas fa-map-marker-alt text-blue-600 dark:text-blue-400 mr-2"></i>
                         Adresse
                     </h3>
-                    <div class="space-y-2">
-                        <p class="text-slate-900 dark:text-white">{{ $entreprise->adresse_entreprise }}</p>
-                        <p class="text-slate-900 dark:text-white">{{ $entreprise->ville_entreprise }}, {{ $entreprise->code_postal_entreprise }}</p>
-                        <p class="text-slate-900 dark:text-white">{{ $entreprise->pays_entreprise }}</p>
+                        <div class="space-y-2">
+                        <p class="text-slate-900 dark:text-white">{{ $entreprise->adresse ?? '' }}</p>
+                        <p class="text-slate-900 dark:text-white">{{ $entreprise->ville ?? '' }}</p>
+                        <p class="text-slate-900 dark:text-white">{{ $entreprise->pays ?? '' }}</p>
                     </div>
                 </div>
             </div>

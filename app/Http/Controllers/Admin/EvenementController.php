@@ -116,9 +116,9 @@ class EvenementController extends Controller
             return view('admin.evenements.by-company', compact('groupedData'));
         }
 
-        // On récupère uniquement les événements créés par ce collaborateur.
+        // On récupère les événements appartenant à l'entreprise du collaborateur.
         $evenements = Evenement::with('ateliers')
-            ->where('id_Collaborateur', $collaborateur->id_Collaborateur)
+            ->where('id_entreprise', $collaborateur->id_entreprise)
             ->orderByDesc('created_at')
             ->get();
 
