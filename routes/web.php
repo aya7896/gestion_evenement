@@ -1,7 +1,8 @@
 <?php 
  
  use Illuminate\Support\Facades\Route; 
- use App\Http\Controllers\ProfileController; 
+use App\Http\Controllers\ProfileController; 
+use App\Http\Controllers\StorageProxyController;
  use App\Http\Controllers\EvenementController; 
  use App\Http\Controllers\AtelierController; 
  use App\Http\Controllers\InscriptionController; 
@@ -18,11 +19,23 @@
  Route::get('/', function () { 
      return view('welcome'); 
  }); 
+
+// Fallback to serve files from storage/app/public when public/storage symlink is missing
+Route::get('storage/{path}', [StorageProxyController::class, 'show'])->where('path', '.*');
  
  // Dashboard 
  Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index']) 
      ->middleware(['auth', 'verified']) 
      ->name('dashboard'); 
+
+// Analytics page for company admins (admin_entreprise)
+Route::get('/analytics', [App\Http\Controllers\DashboardController::class, 'analytics'])
+    ->middleware(['auth', 'checkrole:admin_entreprise'])
+    ->name('analytics.index');
+// Export analytics as CSV
+Route::get('/analytics/export-csv', [App\Http\Controllers\DashboardController::class, 'exportCsv'])
+    ->middleware(['auth', 'checkrole:admin_entreprise'])
+    ->name('analytics.export');
  
  // Profil utilisateur 
  Route::middleware('auth')->group(function () { 
@@ -82,7 +95,20 @@
  
      // Download or generate plaquette (PDF) 
      Route::get('evenements/{evenement}/plaquette', [EvenementController::class, 'downloadPlaquette']) 
-         ->name('evenements.plaquette.download'); 
+         ->name('evenements.plaquette.download');
+     
+     // Voir les détails d'une inscription
+     Route::get('inscriptions/{inscription}', [InscriptionController::class, 'show'])
+         ->name('inscriptions.show');
+     
+     // Exporter les inscriptions en CSV
+     Route::get('evenements/{evenement_id}/inscriptions/export-csv', [InscriptionController::class, 'exportCsv'])
+         ->name('inscriptions.export-csv');
+     
+     // Valider une ou plusieurs inscriptions
+     Route::post('inscriptions/valider', [InscriptionController::class, 'valider'])
+         ->name('inscriptions.valider');
+ 
  
      // CRUD Ateliers par evenement 
      Route::prefix('evenements/{evenement}')->name('evenements.')->group(function () { 

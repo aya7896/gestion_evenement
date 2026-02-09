@@ -183,9 +183,14 @@
             <!-- Divider -->
             <div class="my-4 border-t border-slate-200 dark:border-slate-800/50"></div>
 
-            <!-- Analytics -->
-            <a href="{{ route('dashboard') }}"
-               class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative">
+                <!-- Analytics -->
+                @php
+                     $isAdminEntreprise = auth()->user()->collaborateurs()->first()?->role === 'admin_entreprise';
+                     $isSuperAdmin = auth()->user()->isSuperAdmin();
+                @endphp
+                @if($isAdminEntreprise || $isSuperAdmin)
+                <a href="{{ route('analytics.index') }}"
+                    class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative {{ request()->routeIs('analytics.*') ? 'bg-gradient-to-r from-orange-50 to-rose-50 dark:from-slate-800 dark:to-slate-800/70 text-orange-700 dark:text-orange-400 font-semibold shadow-sm' : '' }}">
                 <div class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -201,6 +206,7 @@
                     Analytics
                 </span>
             </a>
+            @endif
 
             <!-- Settings -->
             <a href="#"

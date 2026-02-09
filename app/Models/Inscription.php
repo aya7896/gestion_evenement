@@ -20,6 +20,7 @@ class Inscription extends Model
         'poste',
         'lien_linkedin',
         'objectif',
+        'statut',
     ];
 
     public $timestamps = false;

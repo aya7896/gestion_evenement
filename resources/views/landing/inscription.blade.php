@@ -153,6 +153,42 @@
                 </div>
             </div>
 
+            <!-- Sélection des Ateliers -->
+            @if($evenement->ateliers->count() > 0)
+                <div class="bg-white rounded-lg shadow-lg p-8 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <i class="fas fa-chalkboard-teacher text-blue-600 mr-3"></i>
+                        Sélectionnez vos ateliers
+                    </h2>
+                    <p class="text-gray-600 mb-6">Choisissez les ateliers auxquels vous souhaitez participer</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($evenement->ateliers as $atelier)
+                            <label class="flex items-start p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-400 cursor-pointer transition">
+                                <input type="checkbox" name="ateliers[]" value="{{ $atelier->id_atelier }}" 
+                                       {{ old('ateliers') && in_array($atelier->id_atelier, old('ateliers', [])) ? 'checked' : '' }}
+                                       class="mt-1 mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800">{{ $atelier->titre }}</p>
+                                    <p class="text-sm text-gray-600 mt-1">{{ Str::limit($atelier->sujet ?? $atelier->description, 60) }}</p>
+                                    <div class="flex gap-3 mt-2 text-xs text-gray-500">
+                                        @if($atelier->date)
+                                            <span><i class="far fa-calendar mr-1"></i>{{ $atelier->date->format('d/m/Y') }}</span>
+                                        @endif
+                                        @if($atelier->heure_debut)
+                                            <span><i class="far fa-clock mr-1"></i>{{ $atelier->heure_debut->format('H:i') }}</span>
+                                        @endif
+                                        @if($atelier->capacite)
+                                            <span><i class="fas fa-users mr-1"></i>{{ $atelier->capacite }} places</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <!-- ...existing code... (remove ateliers section) -->
 
             <!-- Checkbox One-to-One -->

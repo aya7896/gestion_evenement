@@ -8,7 +8,19 @@
 <section class="relative h-96 bg-gradient-to-r from-blue-600 to-blue-800">
     @if($evenement->image)
         <div class="absolute inset-0 bg-black opacity-50"></div>
-        <img src="{{ asset('storage/' . $evenement->image) }}" alt="{{ $evenement->titre }}" 
+        @php
+            $img = $evenement->image ?? null;
+            $imgNorm = $img ? preg_replace('#^(/)?(storage/|public/|storage/app/public/)#', '', $img) : null;
+            if ($imgNorm && \Illuminate\Support\Facades\Storage::disk('public')->exists($imgNorm)) {
+                $imgUrl = asset('storage/' . $imgNorm);
+            } elseif ($img && file_exists($img)) {
+                $imgUrl = asset($img);
+            } else {
+                $imgUrl = null;
+            }
+        @endphp
+        @if($imgUrl)
+        <img src="{{ $imgUrl }}" alt="{{ $evenement->titre }}" 
              class="absolute inset-0 w-full h-full object-cover">
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
     @endif
@@ -75,7 +87,19 @@
                     <div class="mb-6 last:mb-0 border-b last:border-0 pb-6 last:pb-0">
                         <div class="flex items-start gap-4">
                             @if($atelier->image)
-                                <img src="{{ asset('storage/' . $atelier->image) }}" 
+                                @php
+                                    $img = $atelier->image ?? null;
+                                    $imgNorm = $img ? preg_replace('#^(/)?(storage/|public/|storage/app/public/)#', '', $img) : null;
+                                    if ($imgNorm && \Illuminate\Support\Facades\Storage::disk('public')->exists($imgNorm)) {
+                                        $imgUrl = asset('storage/' . $imgNorm);
+                                    } elseif ($img && file_exists($img)) {
+                                        $imgUrl = asset($img);
+                                    } else {
+                                        $imgUrl = null;
+                                    }
+                                @endphp
+                                @if($imgUrl)
+                                <img src="{{ $imgUrl }}" 
                                      alt="{{ $atelier->titre }}"
                                      class="w-24 h-24 rounded-lg object-cover">
                             @else

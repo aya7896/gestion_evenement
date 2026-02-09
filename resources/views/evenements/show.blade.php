@@ -265,6 +265,14 @@
                     <h2 class="text-2xl font-bold text-gray-900">Inscriptions à l'événement</h2>
                     <p class="text-gray-600">{{ $evenement->inscriptions->count() }} personne(s) inscrite(s)</p>
                 </div>
+                @if(!$evenement->inscriptions->isEmpty())
+                    <a href="{{ route('inscriptions.export-csv', $evenement->id_event) }}" class="inline-flex items-center px-6 py-3 bg-emerald-500 text-white font-semibold rounded-lg hover:bg-emerald-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        📥 Exporter en CSV
+                    </a>
+                @endif
             </div>
 
             @if($evenement->inscriptions->isEmpty())
@@ -275,62 +283,331 @@
                     <p class="text-gray-500 text-lg">Aucune inscription pour cet événement</p>
                 </div>
             @else
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-800">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Participant
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Email
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Entreprise
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Poste
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Date d'inscription
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                            @foreach($evenement->inscriptions as $inscription)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ $inscription->user->name ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                                        {{ $inscription->user->email ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                                        {{ $inscription->company ?? '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                                        {{ $inscription->poste ?? '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                                        @if($inscription->date_ins)
-                                            {{ \Carbon\Carbon::parse($inscription->date_ins)->format('d/m/Y H:i') }}
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="#" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                            Voir détails
-                                        </a>
-                                    </td>
+                @if(auth()->user()->collaborateurs()->first() && auth()->user()->collaborateurs()->first()->role === 'admin_entreprise')
+                    <form id="validation-form" action="{{ route('inscriptions.valider') }}" method="POST" class="mb-6">
+                        @csrf
+                        <input type="hidden" name="evenement_id" value="{{ $evenement->id_event }}">
+                        
+                        <div class="bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-400 rounded-lg p-5 mb-4 shadow-md">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <p class="font-bold text-lg text-blue-900">⚙️ Actions de validation</p>
+                                    <p class="text-sm text-blue-700 font-medium">Sélectionnez les inscriptions à valider</p>
+                                </div>
+                                <div class="flex flex-wrap gap-3">
+                                    <label class="inline-flex items-center px-4 py-2 bg-white border-2 border-blue-500 rounded-lg hover:bg-blue-50 hover:border-blue-600 cursor-pointer transition-all font-medium">
+                                        <input type="checkbox" id="select-all-checkbox" class="form-checkbox h-5 w-5 text-blue-700">
+                                        <span class="ml-2 text-sm font-bold text-blue-900">✓ Sélectionner tout</span>
+                                    </label>
+                                    <button type="submit" name="action" value="selected" class="inline-flex items-center px-6 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 active:bg-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:bg-green-400" disabled id="validate-selected-btn">
+                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        ✓ Valider sélectionnées
+                                    </button>
+                                    <button type="submit" name="action" value="all" class="inline-flex items-center px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        ✓✓ Valider TOUTES
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full table-auto divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-800">
+                                    <tr>
+                                        <th class="px-3 py-2 w-8 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            <input type="checkbox" id="table-select-all" class="form-checkbox h-4 w-4 text-blue-600">
+                                        </th>
+                                        <th class="px-3 py-2 w-40 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Participant
+                                        </th>
+                                        <th class="px-3 py-2 w-56 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Email / Téléphone
+                                        </th>
+                                        <th class="px-3 py-2 w-36 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Entreprise
+                                        </th>
+                                        <th class="px-3 py-2 w-56 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Ateliers
+                                        </th>
+                                        <th class="px-3 py-2 w-36 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Date d'inscription
+                                        </th>
+                                        <th class="px-3 py-2 w-28 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Statut
+                                        </th>
+                                        <th class="px-3 py-2 w-28 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                                    @foreach($evenement->inscriptions as $inscription)
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                            <td class="px-3 py-2 whitespace-nowrap">
+                                                @if($inscription->statut !== 'validée')
+                                                    <input type="checkbox" name="inscription_ids[]" value="{{ $inscription->id_inscription }}" class="form-checkbox h-4 w-4 text-blue-600 inscription-checkbox">
+                                                @else
+                                                    <span class="text-green-600">✓</span>
+                                                @endif
+                                            </td>
+
+                                            <td class="px-3 py-2 whitespace-normal break-words text-sm font-medium text-gray-900 dark:text-white">
+                                                {{ $inscription->user->name ?? 'N/A' }}
+                                            </td>
+
+                                            <td class="px-3 py-2 whitespace-normal break-words text-sm text-gray-600 dark:text-gray-400">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="leading-tight">
+                                                        <div class="font-medium text-gray-900 dark:text-white">{{ $inscription->user->email ?? 'N/A' }}</div>
+                                                        <div class="text-xs text-gray-500">{{ $inscription->user->telephone ?? '-' }}</div>
+                                                    </div>
+                                                    <button type="button" class="copy-contact-btn px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs text-gray-700 dark:text-gray-200 border border-gray-200" data-email="{{ $inscription->user->email ?? '' }}" data-phone="{{ $inscription->user->telephone ?? '' }}">Copier</button>
+                                                </div>
+                                            </td>
+
+                                            <td class="px-3 py-2 whitespace-normal break-words text-sm text-gray-600 dark:text-gray-400">
+                                                {{ $inscription->company ?? '-' }}
+                                            </td>
+
+                                            <td class="px-3 py-2 max-w-[220px] whitespace-normal break-words text-sm text-gray-600 dark:text-gray-400">
+                                                {{ $inscription->ateliers->pluck('titre')->implode(', ') ?: '-' }}
+                                            </td>
+
+                                            <td class="px-3 py-2 whitespace-normal text-sm text-gray-600 dark:text-gray-400">
+                                                @if($inscription->date_ins)
+                                                    {{ \Carbon\Carbon::parse($inscription->date_ins)->format('d/m/Y H:i') }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                                @if($inscription->statut === 'validée')
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                        Validée
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-7a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                        En attente
+                                                    </span>
+                                                @endif
+                                            </td>
+
+                                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">
+                                                <div class="flex items-center space-x-2">
+                                                    <a href="{{ route('inscriptions.show', $inscription) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 flex items-center">
+                                                        <i class="fas fa-eye mr-2"></i>Voir détails
+                                                    </a>
+
+                                                    @if($inscription->statut === 'validée')
+                                                        <a href="{{ route('inscription.badge.download', $inscription->id_inscription) }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm shadow-md">
+                                                            <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 12l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                            Badge PDF
+                                                        </a>
+                                                    @else
+                                                        <button class="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-600 rounded text-sm" disabled>
+                                                            Badge (valider d'abord)
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const selectAllCheckbox = document.getElementById('select-all-checkbox');
+                            const tableSelectAll = document.getElementById('table-select-all');
+                            const inscriptionCheckboxes = document.querySelectorAll('.inscription-checkbox');
+                            const validateBtn = document.getElementById('validate-selected-btn');
+                            let updatingState = false;
+
+                            function updateValidateButtonState() {
+                                const checkedCount = document.querySelectorAll('.inscription-checkbox:checked').length;
+                                validateBtn.disabled = checkedCount === 0;
+                            }
+
+                            function setCheckboxes(checked) {
+                                inscriptionCheckboxes.forEach(checkbox => checkbox.checked = checked);
+                                tableSelectAll.checked = checked;
+                                selectAllCheckbox.checked = checked;
+                            }
+
+                            selectAllCheckbox.addEventListener('change', function() {
+                                if (updatingState) return;
+                                updatingState = true;
+                                setCheckboxes(this.checked);
+                                updateValidateButtonState();
+                                updatingState = false;
+                            });
+
+                            tableSelectAll.addEventListener('change', function() {
+                                if (updatingState) return;
+                                updatingState = true;
+                                setCheckboxes(this.checked);
+                                updateValidateButtonState();
+                                updatingState = false;
+                            });
+
+                            inscriptionCheckboxes.forEach(checkbox => {
+                                checkbox.addEventListener('change', function() {
+                                    if (updatingState) return;
+                                    updatingState = true;
+                                    const allChecked = Array.from(inscriptionCheckboxes).every(cb => cb.checked);
+                                    selectAllCheckbox.checked = allChecked;
+                                    tableSelectAll.checked = allChecked;
+                                    updateValidateButtonState();
+                                    updatingState = false;
+                                });
+                            });
+
+                            // Copy contact (email / phone)
+                            function fallbackCopyTextToClipboard(text) {
+                                var textArea = document.createElement("textarea");
+                                textArea.value = text;
+                                // Avoid scrolling to bottom
+                                textArea.style.top = "0";
+                                textArea.style.left = "0";
+                                textArea.style.position = "fixed";
+                                document.body.appendChild(textArea);
+                                textArea.focus();
+                                textArea.select();
+
+                                try {
+                                    var successful = document.execCommand('copy');
+                                    document.body.removeChild(textArea);
+                                    return successful;
+                                } catch (err) {
+                                    document.body.removeChild(textArea);
+                                    return false;
+                                }
+                            }
+
+                            function copyText(text, btn) {
+                                if (!text) return;
+                                if (navigator.clipboard && navigator.clipboard.writeText) {
+                                    navigator.clipboard.writeText(text).then(function() {
+                                        const orig = btn.innerHTML;
+                                        btn.innerHTML = 'Copié ✓';
+                                        setTimeout(() => btn.innerHTML = orig, 1400);
+                                    });
+                                } else {
+                                    const ok = fallbackCopyTextToClipboard(text);
+                                    const orig = btn.innerHTML;
+                                    btn.innerHTML = ok ? 'Copié ✓' : 'Erreur';
+                                    setTimeout(() => btn.innerHTML = orig, 1400);
+                                }
+                            }
+
+                            document.querySelectorAll('.copy-contact-btn').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    const email = this.dataset.email || '';
+                                    const phone = this.dataset.phone || '';
+                                    const text = email + (phone ? ' / ' + phone : '');
+                                    copyText(text, this);
+                                });
+                            });
+                        });
+                    </script>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-800">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Participant
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Email / Téléphone
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Entreprise
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Ateliers
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Date d'inscription
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Statut
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                        Actions
+                                    </th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                                @foreach($evenement->inscriptions as $inscription)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                            <td class="px-3 py-2 whitespace-normal break-words text-sm font-medium text-gray-900 dark:text-white">
+                                                {{ $inscription->user->name ?? 'N/A' }}
+                                            </td>
+                                            <td class="px-3 py-2 whitespace-normal break-words text-sm text-gray-600 dark:text-gray-400">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="leading-tight">
+                                                        <div class="font-medium text-gray-900 dark:text-white">{{ $inscription->user->email ?? 'N/A' }}</div>
+                                                        <div class="text-xs text-gray-500">{{ $inscription->user->telephone ?? '-' }}</div>
+                                                    </div>
+                                                    <button type="button" class="copy-contact-btn px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs text-gray-700 dark:text-gray-200 border border-gray-200" data-email="{{ $inscription->user->email ?? '' }}" data-phone="{{ $inscription->user->telephone ?? '' }}">Copier</button>
+                                                </div>
+                                            </td>
+                                            <td class="px-3 py-2 whitespace-normal break-words text-sm text-gray-600 dark:text-gray-400">
+                                                {{ $inscription->company ?? '-' }}
+                                            </td>
+                                            <td class="px-3 py-2 max-w-[220px] whitespace-normal break-words text-sm text-gray-600 dark:text-gray-400">
+                                                {{ $inscription->ateliers->pluck('titre')->implode(', ') ?: '-' }}
+                                            </td>
+                                            <td class="px-3 py-2 whitespace-normal text-sm text-gray-600 dark:text-gray-400">
+                                                @if($inscription->date_ins)
+                                                    {{ \Carbon\Carbon::parse($inscription->date_ins)->format('d/m/Y H:i') }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            @if($inscription->statut === 'validée')
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Validée
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-7a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    En attente
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <a href="{{ route('inscriptions.show', $inscription) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 flex items-center">
+                                                <i class="fas fa-eye mr-2"></i>Voir détails
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             @endif
         </x-card>
 

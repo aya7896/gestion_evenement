@@ -162,7 +162,7 @@
                                                 <a href="{{ route('evenements.show', $evenement->id_event) }}" class="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
                                                     Voir l'événement
                                                 </a>
-                                                <a href="https://wa.me/?text={{ urlencode(route('public.evenement.landing', $evenement->id_event)) }}" target="_blank" title="Partager sur WhatsApp" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white font-semibold shadow-md transition-all duration-200 ml-2">
+                                                <a href="https://wa.me/?text={{ urlencode(route('public.evenement.landing', $evenement->id_event)) }}" target="_blank" title="Partager sur WhatsApp" class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-black font-semibold shadow-md transition-all duration-200 ml-2">
                                                     Partager
                                                 </a>
                                                 @if($evenement->ateliers->count() > 0)

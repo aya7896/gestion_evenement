@@ -46,7 +46,20 @@
                     <!-- Image de l'atelier -->
                     <div class="relative bg-gradient-to-br from-purple-500 to-purple-600 h-48 flex items-center justify-center overflow-hidden">
                         @if($atelier->image)
-                            <img src="{{ asset('storage/' . $atelier->image) }}" alt="{{ $atelier->titre }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                            @php
+                                $img = $atelier->image ?? null;
+                                $imgNorm = $img ? preg_replace('#^(/)?(storage/|public/|storage/app/public/)#', '', $img) : null;
+                                if ($imgNorm && \Illuminate\Support\Facades\Storage::disk('public')->exists($imgNorm)) {
+                                    $imgUrl = asset('storage/' . $imgNorm);
+                                } elseif ($img && file_exists($img)) {
+                                    $imgUrl = asset($img);
+                                } else {
+                                    $imgUrl = null;
+                                }
+                            @endphp
+                            @if($imgUrl)
+                            <img src="{{ $imgUrl }}" alt="{{ $atelier->titre }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                            @endif
                         @else
                             <div class="flex flex-col items-center justify-center">
                                 <i class="fas fa-chalkboard text-white text-5xl mb-3"></i>

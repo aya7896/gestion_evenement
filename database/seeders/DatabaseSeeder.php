@@ -58,6 +58,7 @@ class DatabaseSeeder extends Seeder
             EvenementSeeder::class,
             AtelierSeeder::class,
             EvenementDemoSeeder::class,
+            InscriptionSeeder::class,
         ]);
     }
 }

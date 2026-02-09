@@ -68,7 +68,20 @@
                                     <tr class="hover:bg-orange-50 dark:hover:bg-slate-800/60 transition">
                                         <td class="px-4 py-3">
                                             @if($evenement->image)
-                                                <img src="{{ asset('storage/' . $evenement->image) }}" alt="Image" class="h-12 w-12 rounded object-cover border border-orange-200 dark:border-slate-700 shadow-sm">
+                                                @php
+                                                    $img = $evenement->image ?? null;
+                                                    $imgNorm = $img ? preg_replace('#^(/)?(storage/|public/|storage/app/public/)#', '', $img) : null;
+                                                    if ($imgNorm && \Illuminate\Support\Facades\Storage::disk('public')->exists($imgNorm)) {
+                                                        $imgUrl = asset('storage/' . $imgNorm);
+                                                    } elseif ($img && file_exists($img)) {
+                                                        $imgUrl = asset($img);
+                                                    } else {
+                                                        $imgUrl = null;
+                                                    }
+                                                @endphp
+                                                @if($imgUrl)
+                                                <img src="{{ $imgUrl }}" alt="Image" class="h-12 w-12 rounded object-cover border border-orange-200 dark:border-slate-700 shadow-sm">
+                                                @endif
                                             @else
                                                 <span class="inline-block w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded"></span>
                                             @endif
