@@ -49,4 +49,14 @@ class Atelier extends Model
     {
         return $this->belongsTo(Evenement::class, 'id_event');
     }
+
+    /**
+     * Speakers associated with this atelier.
+     */
+    public function speakers()
+    {
+        return $this->belongsToMany(Speaker::class, 'atelier_speaker', 'id_atelier', 'id_speaker')
+            ->withPivot(['role', 'ordre'])
+            ->withTimestamps();
+    }
 }

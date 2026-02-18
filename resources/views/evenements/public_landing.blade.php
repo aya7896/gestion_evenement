@@ -22,7 +22,20 @@
             @endif
         </div>
         @if($evenement->image)
-            <img src="{{ asset('storage/' . $evenement->image) }}" alt="Image événement" class="w-full rounded mb-4">
+            @php
+                $img = $evenement->image ?? null;
+                $imgNorm = $img ? preg_replace('#^(/)?(storage/|public/|storage/app/public/)#', '', $img) : null;
+                if ($imgNorm && \Illuminate\Support\Facades\Storage::disk('public')->exists($imgNorm)) {
+                    $imgUrl = asset('storage/' . $imgNorm);
+                } elseif ($img && file_exists($img)) {
+                    $imgUrl = asset($img);
+                } else {
+                    $imgUrl = null;
+                }
+            @endphp
+            @if($imgUrl)
+                <img src="{{ $imgUrl }}" alt="Image événement" class="w-full rounded mb-4">
+            @endif
         @endif
         <h2 class="text-xl font-semibold text-orange-500 mb-2">Ateliers</h2>
         <ul class="list-disc pl-6 mb-4">

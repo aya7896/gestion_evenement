@@ -33,7 +33,7 @@
                         </div>
                     </div>
 
-                    <form action="{{ route('ateliers.store') }}" method="POST" class="space-y-6">
+                    <form action="{{ route('ateliers.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
 
                         <!-- Événement associé -->
@@ -137,6 +137,138 @@
                             @error('description')
                                 <p class="form-error">{{ $message }}</p>
                             @enderror
+                        </div>
+
+                        <!-- Speakers -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-microphone mr-2 text-blue-600"></i>Speakers
+                            </label>
+                            <p class="form-help mb-3">
+                                Associez un ou plusieurs speakers a cet atelier.
+                                <a href="{{ route('admin.speakers.create') }}" class="text-blue-600 hover:underline ml-1">Ajouter un speaker via page dediee</a>
+                            </p>
+                            @php
+                                $selectedSpeakers = old('speakers', []);
+                            @endphp
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                @forelse($speakers as $speaker)
+                                    <label class="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 transition">
+                                        <input type="checkbox"
+                                               name="speakers[]"
+                                               value="{{ $speaker->id_speaker }}"
+                                               class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+                                               {{ in_array($speaker->id_speaker, $selectedSpeakers) ? 'checked' : '' }}>
+                                        <span class="text-sm text-neutral-800 dark:text-neutral-200">
+                                            {{ trim(($speaker->prenom ?? '') . ' ' . ($speaker->nom ?? '')) ?: ('Speaker #' . $speaker->id_speaker) }}
+                                        </span>
+                                    </label>
+                                @empty
+                                    <p class="text-sm text-neutral-500">Aucun speaker actif disponible.</p>
+                                @endforelse
+                            </div>
+                            @error('speakers')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            @error('speakers.*')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Nouveau speaker -->
+                        <div class="form-group">
+                            <details class="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 p-4">
+                                <summary class="cursor-pointer font-semibold text-blue-800 dark:text-blue-300 list-none flex items-center justify-between">
+                                    <span><i class="fas fa-user-plus mr-2"></i>Ajouter un nouveau speaker</span>
+                                    <span class="text-xs text-blue-600 dark:text-blue-400">Optionnel</span>
+                                </summary>
+                                <p class="form-help mt-3 mb-3">Remplissez ce bloc pour creer un speaker et l'associer automatiquement a cet atelier.</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="new_speaker_nom" class="form-label">Nom</label>
+                                        <input type="text"
+                                               id="new_speaker_nom"
+                                               name="new_speaker[nom]"
+                                               value="{{ old('new_speaker.nom') }}"
+                                               class="input @error('new_speaker.nom') input-error @enderror"
+                                               placeholder="Nom du speaker">
+                                        @error('new_speaker.nom')
+                                            <p class="form-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <label for="new_speaker_prenom" class="form-label">Prenom</label>
+                                        <input type="text"
+                                               id="new_speaker_prenom"
+                                               name="new_speaker[prenom]"
+                                               value="{{ old('new_speaker.prenom') }}"
+                                               class="input @error('new_speaker.prenom') input-error @enderror"
+                                               placeholder="Prenom du speaker">
+                                        @error('new_speaker.prenom')
+                                            <p class="form-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <label for="new_speaker_email" class="form-label">Email</label>
+                                        <input type="email"
+                                               id="new_speaker_email"
+                                               name="new_speaker[email]"
+                                               value="{{ old('new_speaker.email') }}"
+                                               class="input @error('new_speaker.email') input-error @enderror"
+                                               placeholder="email@domaine.com">
+                                        @error('new_speaker.email')
+                                            <p class="form-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <label for="new_speaker_poste" class="form-label">Poste</label>
+                                        <input type="text"
+                                               id="new_speaker_poste"
+                                               name="new_speaker[poste]"
+                                               value="{{ old('new_speaker.poste') }}"
+                                               class="input @error('new_speaker.poste') input-error @enderror"
+                                               placeholder="Ex: CTO">
+                                        @error('new_speaker.poste')
+                                            <p class="form-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="new_speaker_company" class="form-label">Entreprise</label>
+                                        <input type="text"
+                                               id="new_speaker_company"
+                                               name="new_speaker[company]"
+                                               value="{{ old('new_speaker.company') }}"
+                                               class="input @error('new_speaker.company') input-error @enderror"
+                                               placeholder="Entreprise du speaker">
+                                        @error('new_speaker.company')
+                                            <p class="form-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="new_speaker_bio" class="form-label">Bio</label>
+                                        <textarea id="new_speaker_bio"
+                                                  name="new_speaker[bio]"
+                                                  rows="3"
+                                                  class="input @error('new_speaker.bio') input-error @enderror"
+                                                  placeholder="Courte presentation du speaker">{{ old('new_speaker.bio') }}</textarea>
+                                        @error('new_speaker.bio')
+                                            <p class="form-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="new_speaker_photo" class="form-label">Photo</label>
+                                        <input type="file"
+                                               id="new_speaker_photo"
+                                               name="new_speaker[photo]"
+                                               accept="image/*"
+                                               class="input @error('new_speaker.photo') input-error @enderror">
+                                        <p class="form-help">Formats acceptes: JPG, PNG, GIF (max 2MB)</p>
+                                        @error('new_speaker.photo')
+                                            <p class="form-error">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Actions -->

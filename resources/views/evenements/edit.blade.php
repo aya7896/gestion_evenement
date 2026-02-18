@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
 <div class="py-6">
@@ -105,6 +105,35 @@
                     @enderror
                 </div>
 
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sponsors associés</label>
+                    @php
+                        $selectedSponsors = old('partenaires', $evenement->partenaires->pluck('id_partenaire')->toArray());
+                    @endphp
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        @forelse(($partenaires ?? collect()) as $partenaire)
+                            <label class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-indigo-400 transition">
+                                <input type="checkbox"
+                                       name="partenaires[]"
+                                       value="{{ $partenaire->id_partenaire }}"
+                                       class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                       {{ in_array($partenaire->id_partenaire, $selectedSponsors) ? 'checked' : '' }}>
+                                <span class="text-sm text-gray-800">
+                                    {{ $partenaire->nom }} <span class="text-gray-500">({{ strtoupper($partenaire->type) }})</span>
+                                </span>
+                            </label>
+                        @empty
+                            <p class="text-sm text-gray-500">Aucun sponsor actif disponible.</p>
+                        @endforelse
+                    </div>
+                    @error('partenaires')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @error('partenaires.*')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <div>
                     <label for="event_link" class="block text-sm font-medium text-gray-700 mb-2">Lien de l'événement (si en ligne)</label>
                     <input type="url" name="event_link" id="event_link" value="{{ old('event_link', $evenement->event_link) }}" 
@@ -139,13 +168,30 @@
                 </div>
 
                 <div>
-                    <label for="validation_superAdmin" class="block text-sm font-medium text-gray-700 mb-2">Validation Super Admin</label>
-                    <select name="validation_superAdmin" id="validation_superAdmin" 
+                    <label for="color_template" class="block text-sm font-medium text-gray-700 mb-2">Template couleur landing</label>
+                    <select name="color_template" id="color_template"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="0" {{ old('validation_superAdmin', $evenement->validation_superAdmin) == 0 ? 'selected' : '' }}>Non validé</option>
-                        <option value="1" {{ old('validation_superAdmin', $evenement->validation_superAdmin) == 1 ? 'selected' : '' }}>Validé</option>
+                        <option value="violet" {{ old('color_template', $evenement->color_template ?? 'violet') == 'violet' ? 'selected' : '' }}>Violet (par défaut)</option>
+                        <option value="ocean" {{ old('color_template', $evenement->color_template) == 'ocean' ? 'selected' : '' }}>Ocean</option>
+                        <option value="sunset" {{ old('color_template', $evenement->color_template) == 'sunset' ? 'selected' : '' }}>Sunset</option>
+                        <option value="forest" {{ old('color_template', $evenement->color_template) == 'forest' ? 'selected' : '' }}>Forest</option>
+                        <option value="slate" {{ old('color_template', $evenement->color_template) == 'slate' ? 'selected' : '' }}>Slate</option>
                     </select>
-                    @error('validation_superAdmin')
+                    @error('color_template')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="hero_appearance" class="block text-sm font-medium text-gray-700 mb-2">Apparence hero landing</label>
+                    <select name="hero_appearance" id="hero_appearance"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="glass_soft" {{ old('hero_appearance', $evenement->hero_appearance ?? 'glass_soft') == 'glass_soft' ? 'selected' : '' }}>Glass Soft</option>
+                        <option value="glass_strong" {{ old('hero_appearance', $evenement->hero_appearance) == 'glass_strong' ? 'selected' : '' }}>Glass Strong</option>
+                        <option value="clean" {{ old('hero_appearance', $evenement->hero_appearance) == 'clean' ? 'selected' : '' }}>Clean</option>
+                        <option value="cinematic" {{ old('hero_appearance', $evenement->hero_appearance) == 'cinematic' ? 'selected' : '' }}>Cinematic</option>
+                    </select>
+                    @error('hero_appearance')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -190,3 +236,6 @@
     </div>
 </div>
 @endsection
+
+
+

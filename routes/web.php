@@ -1,7 +1,8 @@
-<?php 
+﻿<?php 
  
  use Illuminate\Support\Facades\Route; 
- use App\Http\Controllers\ProfileController; 
+use App\Http\Controllers\ProfileController; 
+use App\Http\Controllers\StorageProxyController;
  use App\Http\Controllers\EvenementController; 
  use App\Http\Controllers\AtelierController; 
  use App\Http\Controllers\InscriptionController; 
@@ -18,11 +19,23 @@
  Route::get('/', function () { 
      return view('welcome'); 
  }); 
+
+// Fallback to serve files from storage/app/public when public/storage symlink is missing
+Route::get('storage/{path}', [StorageProxyController::class, 'show'])->where('path', '.*');
  
  // Dashboard 
  Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index']) 
      ->middleware(['auth', 'verified']) 
      ->name('dashboard'); 
+
+// Analytics page for company admins (admin_entreprise)
+Route::get('/analytics', [App\Http\Controllers\DashboardController::class, 'analytics'])
+    ->middleware(['auth', 'checkrole:admin_entreprise'])
+    ->name('analytics.index');
+// Export analytics as CSV
+Route::get('/analytics/export-csv', [App\Http\Controllers\DashboardController::class, 'exportCsv'])
+    ->middleware(['auth', 'checkrole:admin_entreprise'])
+    ->name('analytics.export');
  
  // Profil utilisateur 
  Route::middleware('auth')->group(function () { 
@@ -32,14 +45,18 @@
  }); 
  
  // ------------------------- 
- // Landing page publique événement (partage) 
+ // Landing page publique Ã©vÃ©nement (partage) 
  // ------------------------- 
  Route::get('/e/{evenement}', [EvenementController::class, 'publicLanding']) 
      ->name('public.evenement.landing');
  
- // Ateliers publics d'un événement
+ // Ateliers publics d'un Ã©vÃ©nement
  Route::get('/e/{evenement}/ateliers', [AtelierController::class, 'publicList'])
      ->name('public.evenement.ateliers');
+ 
+ // TÃ©lÃ©chargement public de la plaquette de l'Ã©vÃ©nement
+ Route::get('/e/{evenement}/plaquette', [EvenementController::class, 'publicDownloadPlaquette'])
+     ->name('public.evenement.plaquette.download');
  
  // ------------------------- 
  // Routes d'Inscription Publiques 
@@ -47,20 +64,36 @@
  // Formulaire d'inscription 
  Route::get('/e/{evenement}/inscription', [InscriptionController::class, 'create']) 
      ->name('inscription.create'); 
+
+ // OAuth social pour pre-remplir l'inscription
+ Route::get('/e/{evenement}/inscription/social/{provider}/redirect', [InscriptionController::class, 'redirectToProvider'])
+     ->name('inscription.social.redirect');
+ Route::get('/inscription/social/{provider}/callback', [InscriptionController::class, 'handleProviderCallback'])
+     ->name('inscription.social.callback');
  
  // Enregistrer l'inscription 
  Route::post('/e/{evenement}/inscription', [InscriptionController::class, 'store']) 
      ->name('inscription.store'); 
+
+ // Verification inscription par code
+ Route::get('/inscription/{inscription}/verify', [InscriptionController::class, 'showVerificationForm'])
+     ->name('inscription.verify.form');
+ Route::post('/inscription/{inscription}/verify', [InscriptionController::class, 'verifyCode'])
+     ->name('inscription.verify.submit');
+ Route::post('/inscription/{inscription}/verify/resend', [InscriptionController::class, 'resendCode'])
+     ->name('inscription.verify.resend');
+ Route::post('/inscription/{inscription}/verify/sms', [InscriptionController::class, 'trySmsVerification'])
+     ->name('inscription.verify.sms');
  
  // Page de confirmation 
  Route::get('/inscription/{inscription}/confirmation', [InscriptionController::class, 'confirmation']) 
      ->name('inscription.confirmation'); 
  
- // Télécharger le badge 
+ // TÃ©lÃ©charger le badge 
  Route::get('/inscription/{inscription}/badge', [InscriptionController::class, 'downloadBadge']) 
      ->name('inscription.badge.download'); 
  
- // Télécharger la plaquette 
+ // TÃ©lÃ©charger la plaquette 
  Route::get('/inscription/{inscription}/plaquette', [InscriptionController::class, 'downloadPlaquette']) 
      ->name('inscription.plaquette.download'); 
  
@@ -68,12 +101,12 @@
  Route::delete('/inscription/{inscription}', [InscriptionController::class, 'cancel']) 
      ->name('inscription.cancel'); 
  
- // Sélection des ateliers après inscription
+ // SÃ©lection des ateliers aprÃ¨s inscription
  Route::get('/inscription/{inscription}/ateliers', [InscriptionController::class, 'selectAteliers'])->name('inscription.ateliers.select');
  Route::post('/inscription/{inscription}/ateliers', [InscriptionController::class, 'storeAteliers'])->name('inscription.ateliers.store');
  
  // ------------------------- 
- // Routes Evenements / Ateliers (Authentifiées) 
+ // Routes Evenements / Ateliers (AuthentifiÃ©es) 
  // ------------------------- 
  Route::middleware(['auth'])->group(function () { 
  
@@ -82,7 +115,26 @@
  
      // Download or generate plaquette (PDF) 
      Route::get('evenements/{evenement}/plaquette', [EvenementController::class, 'downloadPlaquette']) 
-         ->name('evenements.plaquette.download'); 
+         ->name('evenements.plaquette.download');
+
+     // Sponsors/partenaires association on event
+     Route::post('evenements/{evenement}/partenaires', [EvenementController::class, 'attachPartenaire'])
+         ->name('evenements.partenaires.attach');
+     Route::delete('evenements/{evenement}/partenaires/{partenaire}', [EvenementController::class, 'detachPartenaire'])
+         ->name('evenements.partenaires.detach');
+     
+     // Voir les dÃ©tails d'une inscription
+     Route::get('inscriptions/{inscription}', [InscriptionController::class, 'show'])
+         ->name('inscriptions.show');
+     
+     // Exporter les inscriptions en CSV
+     Route::get('evenements/{evenement_id}/inscriptions/export-csv', [InscriptionController::class, 'exportCsv'])
+         ->name('inscriptions.export-csv');
+     
+     // Valider une ou plusieurs inscriptions
+     Route::post('inscriptions/valider', [InscriptionController::class, 'valider'])
+         ->name('inscriptions.valider');
+ 
  
      // CRUD Ateliers par evenement 
      Route::prefix('evenements/{evenement}')->name('evenements.')->group(function () { 
@@ -99,7 +151,7 @@
  // Routes Back-office Admin 
  // ------------------------- 
  Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () { 
-     // Mon équipe (admin_entreprise) 
+     // Mon Ã©quipe (admin_entreprise) 
      Route::get('equipe', [\App\Http\Controllers\Admin\EquipeController::class, 'index']) 
          ->name('equipe.index') 
          ->middleware('checkrole:admin_entreprise'); 
@@ -117,7 +169,29 @@
      Route::resource('collaborateurs', CollaborateurController::class) 
          ->middleware('checkrole:super_admin,admin_entreprise,collaborateur'); 
  
-     // Événements - Super Admin et Admin Entreprise 
+     // Speakers (admin entreprise)
+     Route::get('speakers', [\App\Http\Controllers\Admin\SpeakerController::class, 'index'])
+         ->name('speakers.index')
+         ->middleware('checkrole:admin_entreprise');
+     Route::get('speakers/create', [\App\Http\Controllers\Admin\SpeakerController::class, 'create'])
+         ->name('speakers.create')
+         ->middleware('checkrole:admin_entreprise');
+     Route::post('speakers', [\App\Http\Controllers\Admin\SpeakerController::class, 'store'])
+         ->name('speakers.store')
+         ->middleware('checkrole:admin_entreprise');
+
+     // Sponsors / Partenaires (admin entreprise)
+     Route::get('partenaires', [\App\Http\Controllers\Admin\PartenaireController::class, 'index'])
+         ->name('partenaires.index')
+         ->middleware('checkrole:admin_entreprise');
+     Route::get('partenaires/create', [\App\Http\Controllers\Admin\PartenaireController::class, 'create'])
+         ->name('partenaires.create')
+         ->middleware('checkrole:admin_entreprise');
+     Route::post('partenaires', [\App\Http\Controllers\Admin\PartenaireController::class, 'store'])
+         ->name('partenaires.store')
+         ->middleware('checkrole:admin_entreprise'); 
+ 
+     // Ã‰vÃ©nements - Super Admin et Admin Entreprise 
      Route::resource('evenements', \App\Http\Controllers\Admin\EvenementController::class) 
          ->middleware('checkrole:super_admin,admin_entreprise'); 
  
@@ -142,3 +216,4 @@
  // ------------------------- 
  // Auth routes (Breeze) 
  require __DIR__.'/auth.php';
+

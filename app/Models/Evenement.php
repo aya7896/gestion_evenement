@@ -23,12 +23,15 @@ class Evenement extends Model
         'date_heure_debut',
         'date_heure_fin',
         'mode',
+        'color_template',
+        'hero_appearance',
         'plaquette_pdf',
         'validation_superAdmin',
         'status',
         'visibility',
         'event_link',
         'image',
+        'slug',
     ];
 
     /**
@@ -41,6 +44,45 @@ class Evenement extends Model
         'date_heure_fin' => 'datetime',
         'validation_superAdmin' => 'boolean',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->slug) && !empty($model->titre)) {
+                $model->slug = \Illuminate\Support\Str::slug($model->titre);
+            }
+        });
+
+        static::saving(function ($model) {
+            if (empty($model->slug) && !empty($model->titre)) {
+                $model->slug = \Illuminate\Support\Str::slug($model->titre);
+            }
+        });
+    }
+
+    /** Use slug for route model binding */
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+    public function getRouteKey()
+    {
+        return $this->slug ?: (string) $this->getKey();
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $field = $field ?: $this->getRouteKeyName();
+
+        if ($field === 'slug') {
+            return $this->where('slug', $value)
+                ->orWhere('id_event', $value)
+                ->firstOrFail();
+        }
+
+        return parent::resolveRouteBinding($value, $field);
+    }
 
     // ðŸ”¹ Relations
 
@@ -67,5 +109,12 @@ class Evenement extends Model
             'id_event',
             'id_inscription'
         )->withTimestamps();
+    }
+
+    public function partenaires()
+    {
+        return $this->belongsToMany(Partenaire::class, 'event_partenaire', 'id_event', 'id_partenaire')
+            ->withPivot(['contribution', 'montant'])
+            ->withTimestamps();
     }
 }

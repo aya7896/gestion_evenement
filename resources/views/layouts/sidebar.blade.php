@@ -104,6 +104,36 @@
                 </span>
             </a>
 
+            @if($isAdminEntreprise)
+            <a href="{{ route('admin.speakers.index') }}"
+               class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative {{ request()->routeIs('admin.speakers.*') ? 'bg-gradient-to-r from-orange-50 to-rose-50 dark:from-slate-800 dark:to-slate-800/70 text-orange-700 dark:text-orange-400 font-semibold shadow-sm' : '' }}">
+                <div class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                </div>
+                <span class="ml-3 whitespace-nowrap transition-all duration-300"
+                      :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">
+                    Speakers
+                </span>
+            </a>
+
+            <a href="{{ route('admin.partenaires.index') }}"
+               class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative {{ request()->routeIs('admin.partenaires.*') ? 'bg-gradient-to-r from-orange-50 to-rose-50 dark:from-slate-800 dark:to-slate-800/70 text-orange-700 dark:text-orange-400 font-semibold shadow-sm' : '' }}">
+                <div class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M12 8c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm0 2c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4zm8.293 1.293l-2.586-2.586a1 1 0 00-1.414 0l-2.586 2.586a1 1 0 000 1.414l2.586 2.586a1 1 0 001.414 0l2.586-2.586a1 1 0 000-1.414zM3.707 11.293l2.586-2.586a1 1 0 011.414 0l2.586 2.586a1 1 0 010 1.414l-2.586 2.586a1 1 0 01-1.414 0l-2.586-2.586a1 1 0 010-1.414z" />
+                    </svg>
+                </div>
+                <span class="ml-3 whitespace-nowrap transition-all duration-300"
+                      :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">
+                    Sponsors
+                </span>
+            </a>
+            @endif
+
             @if (auth()->user()->isSuperAdmin())
             <!-- Entreprises (Super Admin only) -->
             <a href="{{ route('admin.entreprises.index') }}"
@@ -183,9 +213,14 @@
             <!-- Divider -->
             <div class="my-4 border-t border-slate-200 dark:border-slate-800/50"></div>
 
-            <!-- Analytics -->
-            <a href="{{ route('dashboard') }}"
-               class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative">
+                <!-- Analytics -->
+                @php
+                     $isAdminEntreprise = auth()->user()->collaborateurs()->first()?->role === 'admin_entreprise';
+                     $isSuperAdmin = auth()->user()->isSuperAdmin();
+                @endphp
+                @if($isAdminEntreprise || $isSuperAdmin)
+                <a href="{{ route('analytics.index') }}"
+                    class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative {{ request()->routeIs('analytics.*') ? 'bg-gradient-to-r from-orange-50 to-rose-50 dark:from-slate-800 dark:to-slate-800/70 text-orange-700 dark:text-orange-400 font-semibold shadow-sm' : '' }}">
                 <div class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -201,6 +236,7 @@
                     Analytics
                 </span>
             </a>
+            @endif
 
             <!-- Settings -->
             <a href="#"
@@ -223,7 +259,7 @@
             </a>
         </nav>
 
-        <!-- Bas de sidebar -->
+        <!-- Bas de sidebar -->z
         <div class="mt-auto pt-6 border-t border-slate-200 dark:border-slate-800/50 transition-all duration-300">
             <div class="flex items-center justify-center" :class="sidebarOpen ? 'px-4' : 'px-2'">
                 <div class="text-center" x-show="sidebarOpen" x-transition>

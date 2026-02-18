@@ -115,6 +115,39 @@
                             @enderror
                         </div>
 
+                        <!-- Speakers -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-microphone mr-2 text-blue-600"></i>Speakers
+                            </label>
+                            <p class="form-help mb-3">Associez un ou plusieurs speakers a cet atelier</p>
+                            @php
+                                $selectedSpeakers = old('speakers', $atelier->speakers->pluck('id_speaker')->toArray());
+                            @endphp
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                @forelse($speakers as $speaker)
+                                    <label class="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-blue-400 transition">
+                                        <input type="checkbox"
+                                               name="speakers[]"
+                                               value="{{ $speaker->id_speaker }}"
+                                               class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
+                                               {{ in_array($speaker->id_speaker, $selectedSpeakers) ? 'checked' : '' }}>
+                                        <span class="text-sm text-neutral-800 dark:text-neutral-200">
+                                            {{ trim(($speaker->prenom ?? '') . ' ' . ($speaker->nom ?? '')) ?: ('Speaker #' . $speaker->id_speaker) }}
+                                        </span>
+                                    </label>
+                                @empty
+                                    <p class="text-sm text-neutral-500">Aucun speaker actif disponible.</p>
+                                @endforelse
+                            </div>
+                            @error('speakers')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            @error('speakers.*')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Actions -->
                         <div class="flex justify-end space-x-4 pt-6 border-t border-neutral-100 dark:border-neutral-700">
                             <a href="{{ route('evenements.show', $atelier->evenement) }}" class="btn btn-secondary">

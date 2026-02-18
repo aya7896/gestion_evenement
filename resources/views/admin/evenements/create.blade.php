@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
     <div class="container mx-auto px-4 py-8">
@@ -256,7 +256,7 @@
                                 </div>
                                 <h2 class="form-section-title">Paramètres et options</h2>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 <!-- Lien événement -->
                                 <div>
                                     <label for="event_link" class="form-label">
@@ -318,7 +318,86 @@
                                         </p>
                                     @enderror
                                 </div>
+                                <div>
+                                    <label for="color_template" class="form-label">
+                                        <i class="fas fa-palette mr-2 text-amber-500"></i>
+                                        Template couleur landing
+                                    </label>
+                                    <select name="color_template"
+                                            id="color_template"
+                                            class="form-input-amber @error('color_template') form-input-error @enderror">
+                                        <option value="violet" {{ old('color_template', 'violet') == 'violet' ? 'selected' : '' }}>Violet (par défaut)</option>
+                                        <option value="ocean" {{ old('color_template') == 'ocean' ? 'selected' : '' }}>Ocean</option>
+                                        <option value="sunset" {{ old('color_template') == 'sunset' ? 'selected' : '' }}>Sunset</option>
+                                        <option value="forest" {{ old('color_template') == 'forest' ? 'selected' : '' }}>Forest</option>
+                                        <option value="slate" {{ old('color_template') == 'slate' ? 'selected' : '' }}>Slate</option>
+                                    </select>
+                                    @error('color_template')
+                                        <p class="form-error">
+                                            <i class="fas fa-exclamation-circle mr-1"></i>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label for="hero_appearance" class="form-label">
+                                        <i class="fas fa-layer-group mr-2 text-amber-500"></i>
+                                        Apparence hero landing
+                                    </label>
+                                    <select name="hero_appearance"
+                                            id="hero_appearance"
+                                            class="form-input-amber @error('hero_appearance') form-input-error @enderror">
+                                        <option value="glass_soft" {{ old('hero_appearance', 'glass_soft') == 'glass_soft' ? 'selected' : '' }}>Glass Soft</option>
+                                        <option value="glass_strong" {{ old('hero_appearance') == 'glass_strong' ? 'selected' : '' }}>Glass Strong</option>
+                                        <option value="clean" {{ old('hero_appearance') == 'clean' ? 'selected' : '' }}>Clean</option>
+                                        <option value="cinematic" {{ old('hero_appearance') == 'cinematic' ? 'selected' : '' }}>Cinematic</option>
+                                    </select>
+                                    @error('hero_appearance')
+                                        <p class="form-error">
+                                            <i class="fas fa-exclamation-circle mr-1"></i>
+                                            {{ $message }}
+                                        </p>
+                                    @enderror
+                                </div>
                             </div>
+                        </div>
+                        <!-- Section: Sponsors -->
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <div class="form-section-icon form-section-icon-indigo">
+                                    <i class="fas fa-handshake text-white"></i>
+                                </div>
+                                <h2 class="form-section-title">Sponsors associés</h2>
+                            </div>
+                            <p class="form-help mb-4">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Sélectionnez un ou plusieurs sponsors pour cet evenement.
+                            </p>
+                            @php
+                                $selectedSponsors = old('partenaires', []);
+                            @endphp
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                @forelse(($partenaires ?? collect()) as $partenaire)
+                                    <label class="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 hover:border-indigo-400 transition">
+                                        <input type="checkbox"
+                                               name="partenaires[]"
+                                               value="{{ $partenaire->id_partenaire }}"
+                                               class="rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500"
+                                               {{ in_array($partenaire->id_partenaire, $selectedSponsors) ? 'checked' : '' }}>
+                                        <span class="text-sm text-neutral-800 dark:text-neutral-200">
+                                            {{ $partenaire->nom }} <span class="text-neutral-500">({{ strtoupper($partenaire->type) }})</span>
+                                        </span>
+                                    </label>
+                                @empty
+                                    <p class="text-sm text-neutral-500">Aucun sponsor actif disponible.</p>
+                                @endforelse
+                            </div>
+                            @error('partenaires')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            @error('partenaires.*')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
                         </div>
                         <!-- Section: Admin (si super_admin) -->
                         @if(auth()->user()->role === 'super_admin')
@@ -353,53 +432,8 @@
                                         </p>
                                     @enderror
                                 </div>
-                                <!-- Validation Super Admin -->
-                                <div>
-                                    <label for="validation_superAdmin" class="form-label">
-                                        <i class="fas fa-shield-alt mr-2 text-red-500"></i>
-                                        Validation Super Admin
-                                    </label>
-                                    <select name="validation_superAdmin" 
-                                            id="validation_superAdmin" 
-                                            class="form-input-red @error('validation_superAdmin') form-input-error @enderror">
-                                        <option value="0" {{ old('validation_superAdmin', 0) == 0 ? 'selected' : '' }}>⏳ Non validé</option>
-                                        <option value="1" {{ old('validation_superAdmin') == 1 ? 'selected' : '' }}>✅ Validé</option>
-                                    </select>
-                                    <p class="form-help">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Réservé aux super administrateurs
-                                    </p>
-                                    @error('validation_superAdmin')
-                                        <p class="form-error">
-                                            <i class="fas fa-exclamation-circle mr-1"></i>
-                                            {{ $message }}
-                                        </p>
-                                    @enderror
-                                </div>
+
                             </div>
-                        </div>
-                        @else
-                        <div>
-                            <label for="validation_superAdmin" class="form-label">
-                                <i class="fas fa-shield-alt mr-2 text-amber-500"></i>
-                                Validation Super Admin
-                            </label>
-                            <select name="validation_superAdmin" 
-                                    id="validation_superAdmin" 
-                                    class="form-input-amber @error('validation_superAdmin') form-input-error @enderror">
-                                <option value="0" {{ old('validation_superAdmin', 0) == 0 ? 'selected' : '' }}>⏳ Non validé</option>
-                                <option value="1" {{ old('validation_superAdmin') == 1 ? 'selected' : '' }}>✅ Validé</option>
-                            </select>
-                            <p class="form-help">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Réservé aux super administrateurs
-                            </p>
-                            @error('validation_superAdmin')
-                                <p class="form-error">
-                                    <i class="fas fa-exclamation-circle mr-1"></i>
-                                    {{ $message }}
-                                </p>
-                            @enderror
                         </div>
                         @endif
                         <!-- Section: Fichiers -->
@@ -476,3 +510,6 @@
         </div>
     </div>
 @endsection
+
+
+

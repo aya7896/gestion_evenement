@@ -8,6 +8,7 @@ use App\Models\Collaborateur;
 use App\Models\Evenement;
 use App\Models\Atelier;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -57,6 +58,94 @@ class DashboardController extends Controller
             'upcomingEvents', 
             'recentActivities'
         ));
+    }
+
+    /**
+     * Analytics view for admin_entreprise
+     */
+    public function analytics()
+    {
+        $user = Auth::user();
+        $collab = $user->collaborateurs()->first();
+
+        if (!$collab || $collab->role !== 'admin_entreprise') {
+            abort(403);
+        }
+
+        $entrepriseId = $collab->id_entreprise;
+
+        $events = Evenement::where('id_entreprise', $entrepriseId)->orderBy('date_heure_debut', 'desc')->get();
+        $eventsDetails = [];
+
+        foreach ($events as $ev) {
+            $ateliersCount = $ev->ateliers()->count();
+            $registered = $ev->inscriptions()->count();
+            $validated = $ev->inscriptions()->where('statut', 'validée')->count();
+            $attendanceRate = $registered > 0 ? round(($validated / $registered) * 100) : 0;
+
+            $eventsDetails[] = [
+                'id' => $ev->id_event,
+                'titre' => $ev->titre,
+                'date_debut' => $ev->date_heure_debut,
+                'ateliers_count' => $ateliersCount,
+                'registered' => $registered,
+                'validated' => $validated,
+                'attendance_rate' => $attendanceRate,
+            ];
+        }
+
+        return view('analytics.events', compact('eventsDetails'));
+    }
+
+    /**
+     * Export analytics table as CSV for the entreprise
+     */
+    public function exportCsv()
+    {
+        $user = Auth::user();
+        $collab = $user->collaborateurs()->first();
+
+        if (!$collab || $collab->role !== 'admin_entreprise') {
+            abort(403);
+        }
+
+        $entrepriseId = $collab->id_entreprise;
+
+        $events = Evenement::where('id_entreprise', $entrepriseId)->orderBy('date_heure_debut', 'desc')->get();
+
+        $filename = 'analytics_events_' . date('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $callback = function () use ($events) {
+            $BOM = "\xEF\xBB\xBF"; // UTF-8 BOM
+            echo $BOM;
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['Événement', 'Début', 'Ateliers', 'Inscrits', 'Validés', 'Taux validés'], ';');
+
+            foreach ($events as $ev) {
+                $ateliersCount = $ev->ateliers()->count();
+                $registered = $ev->inscriptions()->count();
+                $validated = $ev->inscriptions()->where('statut', 'validée')->count();
+                $attendanceRate = $registered > 0 ? round(($validated / $registered) * 100) : 0;
+
+                fputcsv($out, [
+                    $ev->titre,
+                    optional($ev->date_heure_debut)->format('Y-m-d'),
+                    $ateliersCount,
+                    $registered,
+                    $validated,
+                    $attendanceRate . '%'
+                ], ';');
+            }
+
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
     
     private function getStats(bool $isSuperAdmin, ?int $entrepriseId): array
@@ -117,6 +206,22 @@ class DashboardController extends Controller
             ? round(($totalParticipants / $totalCapacity) * 100) 
             : 0;
 
+        // Taux de présence (validated / registered) pour les événements filtrés
+        $eventIds = (clone $query)->pluck('id_event')->toArray();
+        if (!empty($eventIds)) {
+            $registeredCount = DB::table('inscription_event')->whereIn('id_event', $eventIds)->count();
+            $validatedCount = DB::table('inscription_event')
+                ->join('inscriptions', 'inscriptions.id_inscription', '=', 'inscription_event.id_inscription')
+                ->whereIn('id_event', $eventIds)
+                ->where('inscriptions.statut', 'validée')
+                ->count();
+        } else {
+            $registeredCount = 0;
+            $validatedCount = 0;
+        }
+
+        $attendanceRate = $registeredCount > 0 ? round(($validatedCount / $registeredCount) * 100) : 0;
+
         // DonnÃ©es pour les graphiques
         $revenueChartData = $this->getMonthlyEventsData($query, 6);
         $revenueChartMonths = $revenueChartData['months'];
@@ -144,6 +249,9 @@ class DashboardController extends Controller
             'week_events' => $weekEvents,
             'week_participations' => $weekParticipations,
             'fill_rate' => min($fillRate, 100), // Cap Ã  100%
+            'attendance_rate' => $attendanceRate,
+            'registered_count' => $registeredCount,
+            'validated_count' => $validatedCount,
             'revenue_chart_data' => $revenueChartValues,
             'revenue_chart_months' => $revenueChartMonths,
             'status_distribution_values' => array_values($statusDistribution),

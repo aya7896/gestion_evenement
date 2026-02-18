@@ -16,8 +16,8 @@ class UpdateAtelierRequest extends FormRequest
         return [
             'titre' => 'required|string|max:255',
             'date' => 'required|date',
-            'heure_debut' => 'required|date_format:H:i',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
+            'heure_debut' => 'nullable|date_format:H:i',
+            'heure_fin' => 'nullable|date_format:H:i|after:heure_debut',
             'visibility' => 'required|in:public,private',
             'sujet' => 'nullable|string',
             'capacite' => 'nullable|integer|min:1',
@@ -25,6 +25,8 @@ class UpdateAtelierRequest extends FormRequest
             'online_link' => 'nullable|url',
             'banniere' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'speakers' => 'nullable|array',
+            'speakers.*' => 'integer|exists:speakers,id_speaker',
         ];
     }
 }

@@ -20,6 +20,20 @@ class Inscription extends Model
         'poste',
         'lien_linkedin',
         'objectif',
+        'statut',
+        'verification_code',
+        'verification_expires_at',
+        'verification_sent_at',
+        'verification_method',
+        'verification_attempts',
+        'verified_at',
+    ];
+
+    protected $casts = [
+        'date_ins' => 'datetime',
+        'verification_expires_at' => 'datetime',
+        'verification_sent_at' => 'datetime',
+        'verified_at' => 'datetime',
     ];
 
     public $timestamps = false;

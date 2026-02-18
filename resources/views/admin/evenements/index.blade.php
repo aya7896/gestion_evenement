@@ -119,17 +119,17 @@
                                 <i class="fas fa-eye"></i> Voir
                             </a>
                             <!-- Bouton de partage de la landing page -->
-                            <button onclick="copyShareLink('{{ route('public.evenement.landing', $evenement->id_event) }}')" title="Partager l'événement" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow transition ml-2">
+                            <button onclick="copyShareLink('{{ route('public.evenement.landing', $evenement) }}')" title="Partager l'Ã©vÃ©nement" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow transition ml-2">
                                 <i class="fas fa-share-nodes"></i> Partager
                             </button>
-                            <a href="https://wa.me/?text={{ urlencode(route('public.evenement.landing', $evenement->id_event)) }}" target="_blank" title="Partager sur WhatsApp" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 text-white text-xs font-semibold shadow transition ml-2">
+                            <a href="https://wa.me/?text={{ urlencode(route('public.evenement.landing', $evenement)) }}" target="_blank" title="Partager sur WhatsApp" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 text-white text-xs font-semibold shadow transition ml-2">
                                 <i class="fab fa-whatsapp"></i>
                             </a>
                             <!-- Bouton de partage de la landing page -->
-                            <button onclick="copyShareLink('{{ route('public.evenement.landing', $evenement->id_event) }}')" title="Partager l'événement" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow transition ml-2">
+                            <button onclick="copyShareLink('{{ route('public.evenement.landing', $evenement) }}')" title="Partager l'Ã©vÃ©nement" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow transition ml-2">
                                 <i class="fas fa-share-nodes"></i> Partager
                             </button>
-                            <a href="https://wa.me/?text={{ urlencode(route('public.evenement.landing', $evenement->id_event)) }}" target="_blank" title="Partager sur WhatsApp" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 text-white text-xs font-semibold shadow transition ml-2">
+                            <a href="https://wa.me/?text={{ urlencode(route('public.evenement.landing', $evenement)) }}" target="_blank" title="Partager sur WhatsApp" class="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-green-500 hover:bg-green-600 text-white text-xs font-semibold shadow transition ml-2">
                                 <i class="fab fa-whatsapp"></i>
                             </a>
                         </td>
