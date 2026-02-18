@@ -14,7 +14,12 @@
                 </a>
             @endif
         </div>
-
+@if(session('success'))
+    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6 flex items-center gap-3">
+        <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-lg"></i>
+        <p class="text-green-800 dark:text-green-300 font-medium">{{ session('success') }}</p>
+    </div>
+@endif
         @if($ateliers->isEmpty())
             <div class="glass-card py-16 text-center">
                 <div class="w-24 h-24 bg-gradient-to-br from-orange-100 to-rose-100 dark:from-orange-900/30 dark:to-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md">

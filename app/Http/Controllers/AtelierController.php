@@ -151,43 +151,36 @@ class AtelierController extends Controller
     }
 
     public function update(UpdateAtelierRequest $request, Evenement $evenement, Atelier $atelier)
-    {
-        $user = Auth::user();
-        // Super admin ne peut plus modifier d'atelier
-        if ($user->role === 'super_admin') {
-            abort(403, 'Le super administrateur ne peut pas modifier d\'atelier.');
-        }
-        $this->authorizeAccess($evenement);
+{
+    $user = Auth::user();
+    if ($user->role === 'super_admin') {
+        abort(403, 'Le super administrateur ne peut pas modifier d\'atelier.');
+    }
+    $this->authorizeAccess($evenement);
 
-        // Mettre à jour l'atelier avec les données validées (sauf les speakers)
-        $updateData = $request->validated();
-        $speakerIds = $updateData['speakers'] ?? [];
-        unset($updateData['speakers']); // Enlever les speakers des données à mettre à jour
+    $updateData = $request->validated();
+    $speakerIds = $updateData['speakers'] ?? [];
+    unset($updateData['speakers']);
 
-        $atelier->update(array_merge($updateData, [
-            'banniere' => $request->banniere ? $request->banniere->store('bannieres', 'public') : $atelier->banniere,
-        ]));
+    $atelier->update(array_merge($updateData, [
+        'banniere' => $request->hasFile('banniere')
+            ? $request->file('banniere')->store('bannieres', 'public')
+            : $atelier->banniere,
+    ]));
 
-        // Synchroniser les speakers
-        if (!empty($speakerIds)) {
-            $syncData = collect($speakerIds)->mapWithKeys(
-                fn ($id) => [(int) $id => ['role' => 'speaker', 'ordre' => 0]]
-            )->all();
-            $atelier->speakers()->sync($syncData);
-        } else {
-            // Si aucun speaker n'est sélectionné, détacher tous les speakers
-            $atelier->speakers()->detach();
-        }
-
-        \Log::info('Données des speakers reçues :', ['speakers' => $request->input('speakers')]);
-
-        if ($user->role === 'admin_entreprise') {
-            return redirect()->route('admin.evenements.show', $evenement->id_event)->with('success', 'Atelier mis à jour');
-        }
-    
-        return redirect()->route('evenements.show', $evenement->id_event)->with('success', 'Atelier mis à jour');
+    if (!empty($speakerIds)) {
+        $syncData = collect($speakerIds)->mapWithKeys(
+            fn ($id) => [(int) $id => ['role' => 'speaker', 'ordre' => 0]]
+        )->all();
+        $atelier->speakers()->sync($syncData);
+    } else {
+        $atelier->speakers()->detach();
     }
 
+    $atelier->load('speakers');
+    $speakers = Speaker::where('actif', true)->orderBy('nom')->orderBy('prenom')->get();
+
+return redirect()->route('ateliers.index')->with('success', 'Atelier mis à jour avec succès.');}
     public function show(Evenement $evenement, Atelier $atelier)
     {
         return view('ateliers.show', compact('evenement', 'atelier'));
