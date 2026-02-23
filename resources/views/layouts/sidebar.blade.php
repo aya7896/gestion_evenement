@@ -70,39 +70,10 @@
                         Événements
                     </span>
                 </a>
-                <!-- Bouton d'ajout d'événement -->
-                @if (auth()->user()->role !== 'super_admin')
-                <a href="{{ route('evenements.create') }}"
-                   class="flex items-center mt-2 px-4 py-3.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold shadow transition group relative">
-                    <div class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <span class="ml-3 whitespace-nowrap transition-all duration-300"
-                          :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">
-                        Ajouter un événement
-                    </span>
-                </a>
-                @endif
+                
             @endif
 
-            <!-- Ateliers -->
-            <a href="{{ route('ateliers.index') }}"
-               class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative {{ str_contains(request()->path(), 'ateliers') ? 'bg-gradient-to-r from-orange-50 to-rose-50 dark:from-slate-800 dark:to-slate-800/70 text-orange-700 dark:text-orange-400 font-semibold shadow-sm' : '' }}">
-                <div class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                </div>
-                <span class="ml-3 whitespace-nowrap transition-all duration-300" 
-                      :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">
-                    Ateliers
-                </span>
-                <span x-show="!sidebarOpen" x-cloak
-                      class="absolute left-full ml-2 px-3 py-2 bg-slate-900 dark:bg-slate-700 text-white text-sm rounded-lg shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    Ateliers
-                </span>
-            </a>
+            
 
             @if($isAdminEntreprise)
             <a href="{{ route('admin.speakers.index') }}"
@@ -239,8 +210,8 @@
             @endif
 
             <!-- Settings -->
-            <a href="#"
-               class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative">
+            <a href="{{ route('profile.edit') }}"
+               class="flex items-center px-4 py-3.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-orange-50 hover:to-rose-50 dark:hover:from-slate-800 dark:hover:to-slate-800/70 transition-all duration-200 group relative {{ request()->routeIs('profile.*') ? 'bg-gradient-to-r from-orange-50 to-rose-50 dark:from-slate-800 dark:to-slate-800/70 text-orange-700 dark:text-orange-400 font-semibold shadow-sm' : '' }}">
                 <div class="w-6 h-6 flex-shrink-0 flex items-center justify-center">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -259,7 +230,7 @@
             </a>
         </nav>
 
-        <!-- Bas de sidebar -->z
+        <!-- Bas de sidebar -->
         <div class="mt-auto pt-6 border-t border-slate-200 dark:border-slate-800/50 transition-all duration-300">
             <div class="flex items-center justify-center" :class="sidebarOpen ? 'px-4' : 'px-2'">
                 <div class="text-center" x-show="sidebarOpen" x-transition>

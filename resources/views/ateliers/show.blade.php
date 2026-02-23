@@ -84,6 +84,21 @@
                 </div>
             </div>
 
+            <!-- Progress Bar -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h2 class="text-lg font-semibold text-neutral-900 dark:text-white">Progression des inscriptions</h2>
+                </div>
+                <div class="card-body">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ ($atelier->inscriptions_valides / $atelier->capacite) * 100 }}%"></div>
+                    </div>
+                    <div class="text-sm text-neutral-600 dark:text-neutral-400 mt-2">
+                        {{ $atelier->inscriptions_valides }} validées / {{ $atelier->inscriptions_total }} totales / {{ $atelier->capacite }} places
+                    </div>
+                </div>
+            </div>
+
             <!-- Actions -->
             <div class="card">
                 <div class="card-body">
@@ -91,17 +106,20 @@
                         <a href="{{ route('evenements.show', $atelier->evenement) }}" class="btn btn-primary flex-1">
                             <i class="fas fa-calendar-alt mr-2"></i>Voir l'événement
                         </a>
-                        @if(auth()->user()->role === 'super_admin')
+                        @php $collab = auth()->user()->collaborateurs()->first(); @endphp
+                        @if(auth()->user()->role === 'super_admin' || ($collab && $collab->role === 'admin_entreprise' && $collab->id_entreprise === $atelier->evenement->id_entreprise))
                             <a href="{{ route('evenements.ateliers.edit', [$atelier->evenement, $atelier]) }}" class="btn btn-secondary flex-1">
                                 <i class="fas fa-edit mr-2"></i>Modifier
                             </a>
-                            <form action="{{ route('evenements.ateliers.destroy', [$atelier->evenement, $atelier]) }}" method="POST" class="flex-1">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger w-full" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet atelier ?')">
-                                    <i class="fas fa-trash mr-2"></i>Supprimer
-                                </button>
-                            </form>
+                            @if(auth()->user()->role === 'super_admin')
+                                <form action="{{ route('evenements.ateliers.destroy', [$atelier->evenement, $atelier]) }}" method="POST" class="flex-1">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger w-full" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet atelier ?')">
+                                        <i class="fas fa-trash mr-2"></i>Supprimer
+                                    </button>
+                                </form>
+                            @endif
                         @endif
                     </div>
                 </div>

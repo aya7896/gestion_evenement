@@ -1,4 +1,4 @@
-@extends('landing.layouts.app')
+@extends('landing.Template 4.layouts.app')
 
 @section('title', 'Inscription confirmée')
 

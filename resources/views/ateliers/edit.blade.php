@@ -19,18 +19,8 @@
                         </div>
                     </div>
                 </div>
-
+                
                 <div class="card-body">
-                   
-
-    @if(isset($success))
-    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6 flex items-center gap-3">
-        <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-lg"></i>
-        <p class="text-green-800 dark:text-green-300 font-medium">{{ $success }}</p>
-    </div>
-@endif
-
-    {{-- reste du contenu... --}}
                     <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
@@ -43,17 +33,13 @@
                         </div>
                     </div>
 
-                    {{-- Champs cachés pour visibility et status --}}
-                    <input type="hidden" name="visibility" value="{{ old('visibility', $atelier->visibility ?? 'public') }}">
-                    <input type="hidden" name="status" value="{{ old('status', $atelier->status ?? 'active') }}">
-
                     <form action="{{ route('evenements.ateliers.update', [$atelier->evenement, $atelier]) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
                         @method('PUT')
 
-                        {{-- Champs cachés DANS le formulaire --}}
+                        {{-- Préserver visibility et status (non affichés dans ce formulaire) --}}
                         <input type="hidden" name="visibility" value="{{ old('visibility', $atelier->visibility ?? 'public') }}">
-                        <input type="hidden" name="status" value="{{ old('status', $atelier->status ?? 'active') }}">
+                        <input type="hidden" name="status" value="{{ old('status', $atelier->status ?? 'actif') }}">
 
                         <!-- Informations de l'atelier -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -61,7 +47,7 @@
                                 <label for="titre" class="form-label">
                                     <i class="fas fa-heading mr-2 text-blue-600"></i>Titre de l'atelier
                                 </label>
-                                <input type="text" name="titre" id="titre" value="{{ old('titre', $atelier->titre) }}"
+                                <input type="text" name="titre" id="titre" value="{{ old('titre', $atelier->titre) }}" 
                                        class="input @error('titre') input-error @enderror"
                                        placeholder="Titre de l'atelier">
                                 @error('titre')
@@ -73,7 +59,7 @@
                                 <label for="capacite" class="form-label">
                                     <i class="fas fa-users mr-2 text-blue-600"></i>Capacité maximale
                                 </label>
-                                <input type="number" name="capacite" id="capacite" value="{{ old('capacite', $atelier->capacite) }}"
+                                <input type="number" name="capacite" id="capacite" value="{{ old('capacite', $atelier->capacite) }}" 
                                        class="input @error('capacite') input-error @enderror"
                                        placeholder="Nombre de participants">
                                 @error('capacite')
@@ -88,7 +74,7 @@
                                 <label for="date" class="form-label">
                                     <i class="fas fa-calendar-day mr-2 text-blue-600"></i>Date de l'atelier
                                 </label>
-                                <input type="date" name="date" id="date" value="{{ old('date', \Illuminate\Support\Carbon::parse($atelier->date)->format('Y-m-d')) }}"
+                                <input type="date" name="date" id="date" value="{{ old('date', \Illuminate\Support\Carbon::parse($atelier->date)->format('Y-m-d')) }}" 
                                        class="input @error('date') input-error @enderror">
                                 <p class="form-help">Doit être comprise entre les dates de l'événement</p>
                                 @error('date')
@@ -100,7 +86,7 @@
                                 <label for="heure_debut" class="form-label">
                                     <i class="fas fa-clock mr-2 text-blue-600"></i>Heure de début
                                 </label>
-                                <input type="time" name="heure_debut" id="heure_debut" value="{{ old('heure_debut', $atelier->heure_debut) }}"
+                                <input type="time" name="heure_debut" id="heure_debut" value="{{ old('heure_debut', $atelier->heure_debut) }}" 
                                        class="input @error('heure_debut') input-error @enderror">
                                 @error('heure_debut')
                                     <p class="form-error">{{ $message }}</p>
@@ -111,7 +97,7 @@
                                 <label for="heure_fin" class="form-label">
                                     <i class="fas fa-clock mr-2 text-blue-600"></i>Heure de fin
                                 </label>
-                                <input type="time" name="heure_fin" id="heure_fin" value="{{ old('heure_fin', $atelier->heure_fin) }}"
+                                <input type="time" name="heure_fin" id="heure_fin" value="{{ old('heure_fin', $atelier->heure_fin) }}" 
                                        class="input @error('heure_fin') input-error @enderror">
                                 @error('heure_fin')
                                     <p class="form-error">{{ $message }}</p>
@@ -119,16 +105,16 @@
                             </div>
                         </div>
 
-                        <!-- Description -->
+                        <!-- Sujet -->
                         <div class="form-group">
-                            <label for="description" class="form-label">
+                            <label for="sujet" class="form-label">
                                 <i class="fas fa-align-left mr-2 text-blue-600"></i>Description
                             </label>
-                            <textarea name="description" id="description" rows="4"
-                                      class="input @error('description') input-error @enderror"
-                                      placeholder="Description de l'atelier...">{{ old('description', $atelier->description) }}</textarea>
+                            <textarea name="sujet" id="sujet" rows="4" 
+                                      class="input @error('sujet') input-error @enderror"
+                                      placeholder="Description de l'atelier...">{{ old('sujet', $atelier->sujet) }}</textarea>
                             <p class="form-help">Détaillez le contenu et les objectifs de l'atelier</p>
-                            @error('description')
+                            @error('sujet')
                                 <p class="form-error">{{ $message }}</p>
                             @enderror
                         </div>
@@ -138,7 +124,7 @@
                             <label class="form-label">
                                 <i class="fas fa-microphone mr-2 text-blue-600"></i>Speakers
                             </label>
-                            <p class="form-help mb-3">Associez un ou plusieurs speakers à cet atelier</p>
+                            <p class="form-help mb-3">Associez un ou plusieurs speakers a cet atelier</p>
                             @php
                                 $selectedSpeakers = old('speakers', $atelier->speakers->pluck('id_speaker')->toArray());
                             @endphp

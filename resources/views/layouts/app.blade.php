@@ -39,7 +39,9 @@
     <div x-data="{ 
         darkMode: Alpine.$persist(true).as('darkMode'),
         sidebarOpen: Alpine.$persist(true).as('sidebarOpen')
-    }" x-cloak>
+    }"
+    x-effect="document.documentElement.classList.toggle('dark', darkMode)"
+    x-cloak>
 
         <!-- Header fixe -->
         @include('layouts.header')

@@ -56,8 +56,8 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
-                                @if($entreprise->logo)
-                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $entreprise->logo) }}" alt="{{ $entreprise->nom }}">
+                                @if($entreprise->logo_url)
+                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ $entreprise->logo_url }}" alt="{{ $entreprise->nom }}">
                                 @else
                                     <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
                                     </div>

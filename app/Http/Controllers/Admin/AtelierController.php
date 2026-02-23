@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Atelier;
 use App\Models\Evenement;
 use App\Models\Speaker;
@@ -161,9 +162,19 @@ class AtelierController extends Controller
             'speakers' => 'nullable|array',
             'speakers.*' => 'integer|exists:speakers,id_speaker',
         ]);
-        $atelier->update(array_merge($request->validated(), [
-            'banniere' => $request->banniere ? $request->banniere->store('bannieres', 'public') : $atelier->banniere,
-        ]));
+        // Fill validated data and handle banner upload explicitly, then save
+        $data = $request->validated();
+        if ($request->hasFile('banniere')) {
+            $data['banniere'] = $request->file('banniere')->store('bannieres', 'public');
+        } else {
+            // keep existing if not provided
+            $data['banniere'] = $atelier->banniere;
+        }
+
+        $atelier->fill($data);
+        $atelier->save();
+
+        // Sync speakers (handle empty case)
         $speakerIds = $request->input('speakers', []);
         $syncData = collect($speakerIds)->mapWithKeys(
             fn ($id) => [(int) $id => ['role' => 'speaker', 'ordre' => 0]]

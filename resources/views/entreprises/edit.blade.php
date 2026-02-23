@@ -126,9 +126,9 @@
                 <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">
                     <i class="fas fa-image mr-1"></i>Logo
                 </label>
-                @if($entreprise->logo)
+                @if($entreprise->logo_url)
                     <div class="mb-2">
-                        <img src="{{ asset('storage/' . $entreprise->logo) }}" alt="Logo actuel" class="h-20 w-20 object-cover rounded">
+                        <img src="{{ $entreprise->logo_url }}" alt="Logo actuel" class="h-20 w-20 object-cover rounded">
                         <p class="text-sm text-gray-500 mt-1">Logo actuel</p>
                     </div>
                 @endif

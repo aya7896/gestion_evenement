@@ -1,3 +1,5 @@
+<!-- resources/views/ateliers/index.blade.php -->
+
 @extends('layouts.app')
 
 @section('content')

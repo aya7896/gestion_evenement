@@ -9,18 +9,8 @@ class Atelier extends Model
 {
     use HasFactory;
 
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
     protected $primaryKey = 'id_atelier';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'id_event',
         'titre',
@@ -29,30 +19,25 @@ class Atelier extends Model
         'banniere',
         'date',
         'capacite',
+        'sujet',        // ← seul champ texte long existant en BDD (pas "description")
+        'visibility',
+        'status',
+        'online_link',
+        'image',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'date' => 'date',
+        'date'       => 'date',
         'heure_debut' => 'datetime:H:i',
-        'heure_fin' => 'datetime:H:i',
+        'heure_fin'  => 'datetime:H:i',
     ];
 
-    /**
-     * Get the event that owns the atelier.
-     */
+    
     public function evenement()
     {
         return $this->belongsTo(Evenement::class, 'id_event');
     }
 
-    /**
-     * Speakers associated with this atelier.
-     */
     public function speakers()
     {
         return $this->belongsToMany(Speaker::class, 'atelier_speaker', 'id_atelier', 'id_speaker')

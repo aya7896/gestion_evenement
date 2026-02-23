@@ -15,6 +15,7 @@ class UserAndEntrepriseSeeder extends Seeder
      * @return void
      */
     public function run()
+    
     {
         // Insert users
         DB::table('users')->insert([

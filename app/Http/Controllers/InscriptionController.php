@@ -29,6 +29,9 @@ class InscriptionController extends Controller
      */
     public function create(Evenement $evenement)
     {
+        $inscriptionView = $this->resolveLandingVariantView($evenement, 'inscription', ['insciption']);
+        $eventFullView = $this->resolveLandingVariantView($evenement, 'event-full');
+
         // Charger les ateliers pour les afficher dans le formulaire
         $evenement->load('ateliers');
         
@@ -43,7 +46,7 @@ class InscriptionController extends Controller
             
             // Si la capacité est atteinte
             if ($registeredCount >= $evenement->capacite) {
-                return view('landing.event-full', compact('evenement'));
+                return view($eventFullView, compact('evenement'));
             }
         }
         
@@ -62,7 +65,42 @@ class InscriptionController extends Controller
         }
         
         $socialPrefill = session('inscription_social');
-        return view('landing.inscription', compact('evenement', 'socialPrefill', 'atelierCapacities'));
+        return view($inscriptionView, compact('evenement', 'socialPrefill', 'atelierCapacities'));
+    }
+
+    private function resolveLandingVariantView(Evenement $evenement, string $variant, array $alternatives = []): string
+    {
+        $templateKey = strtolower((string) ($evenement->landing_template ?: 'template_1'));
+        $templateConfig = Evenement::LANDING_TEMPLATES[$templateKey] ?? Evenement::LANDING_TEMPLATES['template_1'];
+        $baseView = (string) ($templateConfig['view'] ?? Evenement::LANDING_TEMPLATES['template_1']['view']);
+        $baseView = preg_replace('/\.index$/', '', $baseView) ?: 'landing.Template 1';
+
+        $candidateVariants = array_values(array_unique(array_merge([$variant], $alternatives)));
+        $candidates = [];
+
+        foreach ($candidateVariants as $candidateVariant) {
+            $candidates[] = $baseView . '.' . $candidateVariant;
+        }
+
+        if ($templateKey !== 'template_1') {
+            foreach ($candidateVariants as $candidateVariant) {
+                $candidates[] = 'landing.Template 1.' . $candidateVariant;
+            }
+        }
+
+        if ($variant === 'event-full') {
+            $candidates[] = 'landing.Template 4.event-full';
+        }
+
+        $candidates[] = 'landing.' . $variant;
+
+        foreach ($candidates as $candidate) {
+            if (view()->exists($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return $candidates[0];
     }
 
     /**

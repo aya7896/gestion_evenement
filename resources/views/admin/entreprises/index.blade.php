@@ -36,13 +36,9 @@
                         @forelse($entreprises as $entreprise)
                             <tr class="hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-rose-50/50 dark:hover:from-slate-800/50 dark:hover:to-slate-800/30 transition-all duration-300 group">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @php
-                                        $logoPath = $entreprise->logo;
-                                        $logoExists = $logoPath ? \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath) : false;
-                                    @endphp
-                                    @if($logoExists)
+                                    @if($entreprise->logo_url)
                                         <div class="w-16 h-16 rounded-full overflow-hidden shadow-md bg-white/50">
-                                            <img src="{{ \Illuminate\Support\Facades\Storage::url($logoPath) }}" alt="{{ $entreprise->nom }}" class="w-full h-full object-cover object-center block" loading="lazy">
+                                            <img src="{{ $entreprise->logo_url }}" alt="{{ $entreprise->nom }}" class="w-full h-full object-cover object-center block" loading="lazy">
                                         </div>
                                     @else
                                         <div class="w-16 h-16 bg-gradient-to-br from-orange-100 to-rose-100 dark:from-orange-900/30 dark:to-rose-900/30 rounded-full flex items-center justify-center shadow-md">

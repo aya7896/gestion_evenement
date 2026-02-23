@@ -18,11 +18,10 @@
                     @php
                         $collab = auth()->user()->collaborateurs()->first();
                         $entreprise = $collab ? $collab->entreprise : null;
-                        $logoPath = $entreprise?->logo ?? null;
-                        $logoExists = $logoPath ? \Illuminate\Support\Facades\Storage::disk('public')->exists($logoPath) : false;
+                        $logoUrl = $entreprise?->logo_url;
                     @endphp
-                    @if($logoExists)
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($logoPath) }}" alt="{{ $entreprise->nom }}" class="w-12 h-12 rounded-full object-cover shadow-lg hidden sm:block">
+                    @if($logoUrl)
+                        <img src="{{ $logoUrl }}" alt="{{ $entreprise->nom }}" class="w-12 h-12 rounded-full object-cover shadow-lg hidden sm:block">
                     @else
                         <div class="w-12 h-12 bg-gradient-to-br from-orange-500 via-rose-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
                             <i class="fas fa-building"></i>

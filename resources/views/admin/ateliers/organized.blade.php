@@ -89,8 +89,8 @@
                 <div class="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-6 border-b border-slate-200/50 dark:border-slate-700/50">
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div class="flex items-center gap-4">
-                            @if($data['entreprise']->logo)
-                                <img src="{{ asset('storage/' . $data['entreprise']->logo) }}" alt="{{ $data['entreprise']->nom }}" class="w-16 h-16 rounded-xl object-cover border-2 border-slate-200 dark:border-slate-700">
+                            @if($data['entreprise']->logo_url)
+                                <img src="{{ $data['entreprise']->logo_url }}" alt="{{ $data['entreprise']->nom }}" class="w-16 h-16 rounded-xl object-cover border-2 border-slate-200 dark:border-slate-700">
                             @else
                                 <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-rose-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold">
                                     {{ substr($data['entreprise']->nom, 0, 2) }}

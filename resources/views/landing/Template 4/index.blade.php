@@ -1,8 +1,15 @@
-﻿@extends('landing.layouts.app')
+﻿@extends('landing.Template 4.layouts.app')
 
 @section('title', $evenement->titre)
 
 @section('content')
+@php
+    $landingContent = is_array($evenement->landing_content ?? null) ? $evenement->landing_content : [];
+    $heroTitle = data_get($landingContent, 'hero_title', $evenement->titre);
+    $heroSubtitle = data_get($landingContent, 'hero_subtitle', Str::limit($evenement->description, 150));
+    $primaryCtaText = data_get($landingContent, 'primary_cta_text', 'REGISTER NOW');
+    $secondaryCtaText = data_get($landingContent, 'secondary_cta_text', 'VIEW MORE');
+@endphp
 
 <!-- Hero Section -->
 <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -63,10 +70,10 @@
         <div class="max-w-4xl mx-auto text-center">
             <div class="scroll-reveal glass-panel accent-ring rounded-3xl p-6 md:p-10">
                 <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-                    {{ $evenement->titre }}
+                    {{ $heroTitle }}
                 </h1>
                 <p class="text-xl md:text-2xl text-gray-200 mb-8 max-w-2xl mx-auto">
-                    {{ Str::limit($evenement->description, 150) }}
+                    {{ $heroSubtitle }}
                 </p>
                 
                 <!-- Event Meta -->
@@ -84,25 +91,12 @@
                 <!-- CTA Buttons -->
                 <div class="flex flex-wrap justify-center gap-4">
                     <a href="#details" class="btn-gradient text-white px-8 py-4 rounded-full font-semibold flex items-center">
-                        VIEW MORE <i class="fas fa-arrow-right ml-2"></i>
+                        {{ $secondaryCtaText }} <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                           <a href="{{ route('inscription.create', $evenement) }}" class="btn-outline-glow text-white px-8 py-4 rounded-full font-semibold transition flex items-center">
-                              REGISTER NOW <i class="fas fa-arrow-right ml-2"></i>
+                              {{ $primaryCtaText }} <i class="fas fa-arrow-right ml-2"></i>
                           </a>
                 </div>
-                @php
-                    $shareUrl = route('public.evenement.landing', $evenement);
-                    $inviteMessage = 'Vous êtes invite(e) à l\'evenement "' . $evenement->titre . '". Inscription ici : ' . $shareUrl;
-                    $shareText = urlencode($inviteMessage . ' — ' . Str::limit($evenement->description, 120));
-                    $shareTitle = urlencode($evenement->titre);
-                @endphp
-                <div class="flex justify-center gap-3 mt-4">
-                    <a target="_blank" rel="noopener" href="https://api.whatsapp.com/send?text={{ $shareText }}" class="px-4 py-2 bg-green-600 rounded-full text-white inline-flex items-center gap-2"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                    <a target="_blank" rel="noopener" href="https://t.me/share/url?url={{ urlencode($shareUrl) }}&text={{ $shareText }}" class="px-4 py-2 bg-blue-500 rounded-full text-white inline-flex items-center gap-2"><i class="fab fa-telegram"></i> Telegram</a>
-                    <a target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}" class="px-4 py-2 bg-blue-800 rounded-full text-white inline-flex items-center gap-2"><i class="fab fa-facebook"></i> Facebook</a>
-                    <a href="mailto:?subject={{ $shareTitle }}&body={{ rawurlencode($inviteMessage . '\n\n' . Str::limit($evenement->description, 200)) }}" class="px-4 py-2 bg-neutral-800 rounded-full text-white inline-flex items-center gap-2"><i class="fas fa-envelope"></i> Email</a>
-                </div>
-
     </div>
 </section>
 
@@ -256,7 +250,7 @@
                 <div class="schedule-item scroll-reveal glass-panel rounded-xl p-6 flex flex-col md:flex-row items-center gap-6 border border-white/20 hover:border-pink-500/50 transition" data-day="{{ $atelier->date?->format('Y-m-d') ?? $debutEvent->format('Y-m-d') }}">
                     @php
                         $mainSpeaker = $atelier->speakers->first();
-                        $mainSpeakerImage = $mainSpeaker?->photo_url ?: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop';
+                        $mainSpeakerImage = $mainSpeaker ? $mainSpeaker->photo_url : 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop';
                         $startTime = $atelier->heure_debut ? \Carbon\Carbon::parse($atelier->heure_debut)->format('H:i') : '--:--';
                         $endTime = $atelier->heure_fin ? \Carbon\Carbon::parse($atelier->heure_fin)->format('H:i') : '--:--';
                     @endphp
@@ -284,7 +278,7 @@
                         </div>
                     </div>
                     <a href="{{ route('inscription.create', $evenement) }}" class="btn-gradient text-white px-6 py-3 rounded-full text-sm font-semibold">
-                        VIEW MORE <i class="fas fa-arrow-right ml-1"></i>
+                        {{ $secondaryCtaText }} <i class="fas fa-arrow-right ml-1"></i>
                     </a>
                 </div>
             @empty
@@ -338,22 +332,54 @@
 
 
 <script>
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            document.getElementById('months').textContent = String(months).padStart(2, '0');
-            document.getElementById('days').textContent = String(days).padStart(2, '0');
-            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-        } else {
-            document.getElementById('months').textContent = '00';
-            document.getElementById('days').textContent = '00';
-            document.getElementById('hours').textContent = '00';
-            document.getElementById('minutes').textContent = '00';
-            document.getElementById('seconds').textContent = '00';
-        }
+    function setCountdownValues(months, days, hours, minutes, seconds) {
+        const elMonths = document.getElementById('months');
+        const elDays = document.getElementById('days');
+        const elHours = document.getElementById('hours');
+        const elMinutes = document.getElementById('minutes');
+        const elSeconds = document.getElementById('seconds');
+        if (!elMonths || !elDays || !elHours || !elMinutes || !elSeconds) return;
+
+        elMonths.textContent = String(months).padStart(2, '0');
+        elDays.textContent = String(days).padStart(2, '0');
+        elHours.textContent = String(hours).padStart(2, '0');
+        elMinutes.textContent = String(minutes).padStart(2, '0');
+        elSeconds.textContent = String(seconds).padStart(2, '0');
     }
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
+
+    function updateCountdown() {
+        const eventDate = new Date('{{ optional($evenement->date_heure_debut)->toIso8601String() }}');
+        if (Number.isNaN(eventDate.getTime())) {
+            setCountdownValues(0, 0, 0, 0, 0);
+            return false;
+        }
+
+        const now = new Date().getTime();
+        const distance = eventDate.getTime() - now;
+
+        if (distance <= 0) {
+            setCountdownValues(0, 0, 0, 0, 0);
+            return false;
+        }
+
+        const months = Math.floor(distance / (1000 * 60 * 60 * 24 * 30));
+        const days = Math.floor((distance % (1000 * 60 * 60 * 24 * 30)) / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        setCountdownValues(months, days, hours, minutes, seconds);
+        return true;
+    }
+
+    let countdownInterval = null;
+    function startCountdown() {
+        if (!updateCountdown()) return;
+        countdownInterval = setInterval(function () {
+            if (!updateCountdown() && countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+    }
 
     // Tab switching
     function switchTab(day) {
@@ -381,6 +407,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        startCountdown();
         const firstTab = document.querySelector('.tab-btn');
         if (firstTab) {
             const firstDay = firstTab.id.replace('tab-', '');

@@ -155,9 +155,9 @@
                     @error('logo')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    @if($entreprise->logo)
+                    @if($entreprise->logo_url)
                         <div class="mt-2">
-                            <img src="{{ asset('storage/' . $entreprise->logo) }}" alt="Logo actuel" class="h-16 w-16 object-cover rounded">
+                            <img src="{{ $entreprise->logo_url }}" alt="Logo actuel" class="h-16 w-16 object-cover rounded">
                         </div>
                     @endif
                 </div>

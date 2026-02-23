@@ -112,6 +112,10 @@ Route::get('/analytics/export-csv', [App\Http\Controllers\DashboardController::c
  
      // CRUD Evenements (accessible aux collaborateurs uniquement) 
      Route::resource('evenements', EvenementController::class); 
+
+     // Preview template landing for admin choice
+     Route::get('landing/templates/{template}/preview', [EvenementController::class, 'previewLandingTemplate'])
+         ->name('landing.templates.preview');
  
      // Download or generate plaquette (PDF) 
      Route::get('evenements/{evenement}/plaquette', [EvenementController::class, 'downloadPlaquette']) 
@@ -120,8 +124,14 @@ Route::get('/analytics/export-csv', [App\Http\Controllers\DashboardController::c
      // Sponsors/partenaires association on event
      Route::post('evenements/{evenement}/partenaires', [EvenementController::class, 'attachPartenaire'])
          ->name('evenements.partenaires.attach');
+     Route::post('evenements/{evenement}/partenaires/create', [EvenementController::class, 'createAndAttachPartenaire'])
+         ->name('evenements.partenaires.createAndAttach');
      Route::delete('evenements/{evenement}/partenaires/{partenaire}', [EvenementController::class, 'detachPartenaire'])
          ->name('evenements.partenaires.detach');
+
+     // Toggle event visibility
+     Route::patch('evenements/{evenement}/toggle-visibility', [EvenementController::class, 'toggleVisibility'])
+         ->name('evenements.toggleVisibility');
      
      // Voir les dÃ©tails d'une inscription
      Route::get('inscriptions/{inscription}', [InscriptionController::class, 'show'])
@@ -206,9 +216,9 @@ Route::get('/analytics/export-csv', [App\Http\Controllers\DashboardController::c
              ->name('ateliers.organized'); 
  
          // Gestion des inscriptions 
-         Route::get('inscriptions', [\App\Http\Controllers\Admin\InscriptionController::class, 'index']) 
+         Route::get('inscriptions', [\App\Http\Controllers\InscriptionController::class, 'index']) 
              ->name('inscriptions.index'); 
-         Route::get('inscriptions/{inscription}', [\App\Http\Controllers\Admin\InscriptionController::class, 'show']) 
+         Route::get('inscriptions/{inscription}', [\App\Http\Controllers\InscriptionController::class, 'show']) 
              ->name('inscriptions.show'); 
      }); 
  }); 
@@ -216,4 +226,3 @@ Route::get('/analytics/export-csv', [App\Http\Controllers\DashboardController::c
  // ------------------------- 
  // Auth routes (Breeze) 
  require __DIR__.'/auth.php';
-

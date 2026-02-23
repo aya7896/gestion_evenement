@@ -2,11 +2,14 @@
 
 @section('content')
 <div class="py-6">
-    <div class="max-w-7xl mx-auto">
-        <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg">
+    <div class="max-w-7xl mx-auto space-y-6">
+        <div class="bg-white dark:bg-slate-800/90 overflow-hidden shadow-lg border border-slate-200/50 dark:border-slate-700/50 sm:rounded-2xl">
             <div class="p-6 text-gray-900 dark:text-gray-100">
                 <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Collaborateurs</h1>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Collaborateurs</h1>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Apercu groupe par entreprise avec acces rapide aux actions.</p>
+                    </div>
                     <a href="{{ route('admin.collaborateurs.create') }}" 
                        class="btn btn-primary">
                         <i class="fas fa-plus mr-2"></i> Ajouter un collaborateur
@@ -50,9 +53,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                <thead class="bg-slate-100 dark:bg-slate-700/70">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nom</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
@@ -63,22 +66,27 @@
                                 </thead>
                                 <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach($entrepriseCollaborateurs as $collaborateur)
+                                        @php
+                                            $user = $collaborateur->user;
+                                            $initialNom = $user?->nom ? substr($user->nom, 0, 1) : '?';
+                                            $initialPrenom = $user?->prenom ? substr($user->prenom, 0, 1) : '';
+                                        @endphp
                                         <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
                                                     <div class="w-10 h-10 bg-gradient-to-r from-orange-400 to-rose-400 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-3">
-                                                        {{ substr($collaborateur->user->nom, 0, 1) }}{{ substr($collaborateur->user->prenom, 0, 1) }}
+                                                        {{ $initialNom }}{{ $initialPrenom }}
                                                     </div>
                                                     <div>
                                                         <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                            {{ $collaborateur->user->nom }} {{ $collaborateur->user->prenom }}
+                                                            {{ $user?->nom ?? 'Utilisateur' }} {{ $user?->prenom ?? 'supprime' }}
                                                         </div>
                                                         <div class="text-xs text-gray-500 dark:text-gray-400">ID: {{ $collaborateur->id_user }}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-500 dark:text-gray-300">{{ $collaborateur->user->email }}</div>
+                                                <div class="text-sm text-gray-500 dark:text-gray-300">{{ $user?->email ?? 'Email indisponible' }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -97,7 +105,7 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div class="flex space-x-2">
+                                                <div class="flex flex-wrap gap-2">
                                                     <a href="{{ route('admin.collaborateurs.show', $collaborateur) }}" 
                                                        class="btn btn-info text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-800">
                                                         <i class="fas fa-eye mr-1"></i> Consulter
@@ -143,7 +151,7 @@
 @push('styles')
 <style>
     .btn {
-        @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md transition-all duration-200;
+        @apply inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg transition-all duration-200;
     }
     
     .btn-primary {

@@ -125,7 +125,7 @@ class EntrepriseController extends Controller
 
         $entreprise->update($data);
 
-        return redirect()->route('admin.entreprises.index')->with('success', 'Entreprise mise à jour avec succès');
+        return redirect()->route('admin.entreprises.infos')->with('success', 'Entreprise mise à jour avec succès');
     }
 
     public function destroy(Entreprise $entreprise)

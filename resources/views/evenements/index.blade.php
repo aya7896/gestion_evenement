@@ -1,7 +1,13 @@
+<!-- resources/views/evenements/index.blade.php -->
+
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <div class="container mx-auto px-4 py-8 max-w-
+
+ 
+
+
         <!-- Page Header -->
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             <div>

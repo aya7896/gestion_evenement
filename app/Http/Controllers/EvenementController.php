@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Evenement;
 use App\Models\Collaborateur;
 use App\Models\Partenaire;
+use App\Models\Speaker;
+use App\Models\Atelier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreEvenementRequest;
 use App\Http\Requests\UpdateEvenementRequest;
 
@@ -40,7 +43,46 @@ class EvenementController extends Controller
             'partenaires' => fn ($q) => $q->where('actif', true)->orderBy('ordre')->orderBy('nom'),
         ]);
         $this->normalizeEvenementImage($evenement);
-        return view('landing.index', compact('evenement'));
+        $templateView = $this->resolveLandingTemplateView($evenement);
+        return view($templateView, compact('evenement'));
+    }
+
+    public function previewLandingTemplate(string $template)
+    {
+        $templateKey = strtolower($template);
+        if (!array_key_exists($templateKey, Evenement::LANDING_TEMPLATES)) {
+            abort(404);
+        }
+
+        $evenement = new Evenement([
+            'slug' => 'preview-event',
+            'titre' => 'Demo Event',
+            'description' => 'Visualisation du template landing pour selection admin.',
+            'type' => 'conference',
+            'localisation' => 'Casablanca',
+            'lieu' => 'Conference Hall',
+            'date_heure_debut' => now()->addDays(20),
+            'date_heure_fin' => now()->addDays(20)->addHours(5),
+            'mode' => 'hybride',
+            'capacite' => 250,
+            'visibility' => 'public',
+            'status' => 'active',
+            'landing_template' => $templateKey,
+            'landing_content' => [
+                'hero_title' => 'Demo Event',
+                'hero_subtitle' => 'Visualisation du template landing pour selection admin.',
+                'primary_cta_text' => 'Je m inscris',
+                'secondary_cta_text' => 'Voir le programme',
+            ],
+        ]);
+
+        $evenement->setRelation('entreprise', new \App\Models\Entreprise(['nom' => 'Demo Company']));
+        $evenement->setRelation('ateliers', collect());
+        $evenement->setRelation('partenaires', collect());
+
+        $templateView = Evenement::LANDING_TEMPLATES[$templateKey]['view'];
+
+        return view($templateView, compact('evenement'));
     }
     /**
      * VÃƒÂ©rifie si l'utilisateur est super admin
@@ -104,7 +146,10 @@ class EvenementController extends Controller
         // admin_entreprise crÃƒÂ©e pour sa propre entreprise (pas d'option ÃƒÂ  choisir)
         $entreprises = null;
         $partenaires = Partenaire::where('actif', true)->orderBy('ordre')->orderBy('nom')->get();
-        return view('evenements.create', compact('entreprises', 'partenaires'));
+        $speakers = Speaker::where('actif', true)->orderBy('nom')->orderBy('prenom')->get();
+        $partenaireTypes = Partenaire::TYPES;
+        $landingTemplates = Evenement::LANDING_TEMPLATES;
+        return view('evenements.create', compact('entreprises', 'partenaires', 'speakers', 'partenaireTypes', 'landingTemplates'));
     }
 
     public function store(StoreEvenementRequest $request)
@@ -120,21 +165,144 @@ class EvenementController extends Controller
         $request->validate([
             'partenaires' => 'nullable|array',
             'partenaires.*' => 'integer|exists:partenaires,id_partenaire',
+            'new_partenaires' => 'nullable|array',
+            'new_partenaires.*.nom' => 'nullable|string|max:255',
+            'new_partenaires.*.type' => 'nullable|in:gold,silver,bronze,media,institutionnel,autre',
+            'new_partenaires.*.email' => 'nullable|email|max:255',
+            'new_partenaires.*.telephone' => 'nullable|string|max:50',
+            'new_partenaires.*.site_web' => 'nullable|url|max:255',
+            'new_partenaires.*.description' => 'nullable|string',
+            'new_partenaires.*.logo' => 'nullable|image|max:2048',
+            'ateliers' => 'nullable|array',
+            'ateliers.*.titre' => 'nullable|string|max:255',
+            'ateliers.*.date' => 'nullable|date',
+            'ateliers.*.heure_debut' => 'nullable|date_format:H:i',
+            'ateliers.*.heure_fin' => 'nullable|date_format:H:i',
+            'ateliers.*.capacite' => 'nullable|integer|min:1',
+            'ateliers.*.sujet' => 'nullable|string',
+            'ateliers.*.banniere' => 'nullable|image|max:2048',
+            'ateliers.*.speakers' => 'nullable|array',
+            'ateliers.*.speakers.*' => 'integer|exists:speakers,id_speaker',
+            'ateliers.*.new_speaker.nom' => 'nullable|string|max:255',
+            'ateliers.*.new_speaker.prenom' => 'nullable|string|max:255',
+            'ateliers.*.new_speaker.email' => 'nullable|email|max:255',
+            'ateliers.*.new_speaker.poste' => 'nullable|string|max:255',
+            'ateliers.*.new_speaker.company' => 'nullable|string|max:255',
+            'ateliers.*.new_speaker.bio' => 'nullable|string',
+            'ateliers.*.new_speaker.photo' => 'nullable|image|max:2048',
         ]);
         $plaquettePath = $request->plaquette_pdf ? $request->plaquette_pdf->store('plaquettes') : null;
         $imagePath = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : null;
-        $evenement = Evenement::create(array_merge($request->validated(), [
-            'id_Collaborateur' => $collab->id_Collaborateur,
-            'id_entreprise' => $collab->id_entreprise,
-            'plaquette_pdf' => $plaquettePath,
-            'image' => $imagePath,
-        ]));
-        $partenaireIds = collect($request->input('partenaires', []))
-            ->map(fn ($id) => (int) $id)
-            ->unique()
-            ->values()
-            ->all();
-        $evenement->partenaires()->sync($partenaireIds);
+        $validated = $request->validated();
+        $validated['landing_template'] = $validated['landing_template'] ?? 'template_1';
+        $validated['landing_content'] = array_filter($validated['landing_content'] ?? [], fn ($value) => filled($value));
+
+        $evenement = null;
+        DB::transaction(function () use ($request, $validated, $collab, $plaquettePath, $imagePath, &$evenement) {
+            $evenement = Evenement::create(array_merge($validated, [
+                'id_Collaborateur' => $collab->id_Collaborateur,
+                'id_entreprise' => $collab->id_entreprise,
+                'plaquette_pdf' => $plaquettePath,
+                'image' => $imagePath,
+            ]));
+
+            $partenaireIds = collect($request->input('partenaires', []))
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all();
+            $evenement->partenaires()->sync($partenaireIds);
+
+            foreach ((array) $request->input('new_partenaires', []) as $index => $newPartenaire) {
+                $hasName = filled($newPartenaire['nom'] ?? null);
+                if (!$hasName) {
+                    continue;
+                }
+
+                $logoPath = $request->hasFile("new_partenaires.$index.logo")
+                    ? $request->file("new_partenaires.$index.logo")->store('partenaires/logos', 'public')
+                    : null;
+
+                $partenaire = Partenaire::create([
+                    'nom' => trim((string) ($newPartenaire['nom'] ?? '')),
+                    'type' => (string) ($newPartenaire['type'] ?? 'autre'),
+                    'email' => filled($newPartenaire['email'] ?? null) ? trim((string) $newPartenaire['email']) : null,
+                    'telephone' => filled($newPartenaire['telephone'] ?? null) ? trim((string) $newPartenaire['telephone']) : null,
+                    'description' => filled($newPartenaire['description'] ?? null) ? trim((string) $newPartenaire['description']) : null,
+                    'site_web' => filled($newPartenaire['site_web'] ?? null) ? trim((string) $newPartenaire['site_web']) : null,
+                    'logo' => $logoPath,
+                    'actif' => true,
+                ]);
+
+                $evenement->partenaires()->syncWithoutDetaching([$partenaire->id_partenaire]);
+            }
+
+            foreach ((array) $request->input('ateliers', []) as $atelierIndex => $atelierData) {
+                $hasCoreData = filled($atelierData['titre'] ?? null)
+                    || filled($atelierData['date'] ?? null)
+                    || filled($atelierData['heure_debut'] ?? null)
+                    || filled($atelierData['heure_fin'] ?? null)
+                    || filled($atelierData['capacite'] ?? null);
+
+                if (!$hasCoreData) {
+                    continue;
+                }
+
+                if (!filled($atelierData['titre'] ?? null) || !filled($atelierData['date'] ?? null) || !filled($atelierData['heure_debut'] ?? null) || !filled($atelierData['heure_fin'] ?? null) || !filled($atelierData['capacite'] ?? null)) {
+                    continue;
+                }
+
+                $atelier = Atelier::create([
+                    'id_event' => $evenement->id_event,
+                    'titre' => trim((string) ($atelierData['titre'] ?? '')),
+                    'date' => $atelierData['date'],
+                    'heure_debut' => $atelierData['heure_debut'],
+                    'heure_fin' => $atelierData['heure_fin'],
+                    'capacite' => (int) $atelierData['capacite'],
+                    'sujet' => filled($atelierData['sujet'] ?? null) ? trim((string) $atelierData['sujet']) : null,
+                    'banniere' => $request->hasFile("ateliers.$atelierIndex.banniere")
+                        ? $request->file("ateliers.$atelierIndex.banniere")->store('bannieres', 'public')
+                        : null,
+                ]);
+
+                $speakerIds = collect((array) ($atelierData['speakers'] ?? []))
+                    ->map(fn ($id) => (int) $id)
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                $newSpeakerData = (array) ($atelierData['new_speaker'] ?? []);
+                $hasNewSpeaker = filled($newSpeakerData['nom'] ?? null) && filled($newSpeakerData['prenom'] ?? null);
+
+                if ($hasNewSpeaker) {
+                    $photoPath = $request->hasFile("ateliers.$atelierIndex.new_speaker.photo")
+                        ? $request->file("ateliers.$atelierIndex.new_speaker.photo")->store('speakers/photos', 'public')
+                        : null;
+
+                    $speaker = Speaker::create([
+                        'nom' => trim((string) ($newSpeakerData['nom'] ?? '')),
+                        'prenom' => trim((string) ($newSpeakerData['prenom'] ?? '')),
+                        'email' => filled($newSpeakerData['email'] ?? null) ? trim((string) $newSpeakerData['email']) : null,
+                        'poste' => filled($newSpeakerData['poste'] ?? null) ? trim((string) $newSpeakerData['poste']) : null,
+                        'company' => filled($newSpeakerData['company'] ?? null) ? trim((string) $newSpeakerData['company']) : null,
+                        'bio' => filled($newSpeakerData['bio'] ?? null) ? trim((string) $newSpeakerData['bio']) : null,
+                        'photo' => $photoPath,
+                        'actif' => true,
+                    ]);
+
+                    $speakerIds[] = (int) $speaker->id_speaker;
+                    $speakerIds = array_values(array_unique($speakerIds));
+                }
+
+                if (!empty($speakerIds)) {
+                    $syncData = collect($speakerIds)->mapWithKeys(
+                        fn ($id) => [(int) $id => ['role' => 'speaker', 'ordre' => 0]]
+                    )->all();
+                    $atelier->speakers()->sync($syncData);
+                }
+            }
+        });
     
         // Redirection pour l'admin d'entreprise
         if ($collab->role === 'admin_entreprise') {
@@ -190,7 +358,54 @@ class EvenementController extends Controller
 
         return redirect()->route('evenements.show', $evenement)->with('success', 'Sponsor ajoutÃ© Ã  l\'Ã©vÃ©nement.');
     }
+    public function createAndAttachPartenaire(Request $request, Evenement $evenement)
+    {
+        if ($this->isSuperAdmin()) {
+            abort(403, 'Le super administrateur ne peut pas créer de partenaires.');
+        }
+        $collab = $this->getUserCollaborateur();
+        if (!$collab || $collab->role !== 'admin_entreprise' || $evenement->id_entreprise !== $collab->id_entreprise) {
+            abort(403, 'Vous ne pouvez modifier que les partenaires de vos événements.');
+        }
 
+        $validated = $request->validate([
+            'nom' => 'required|string|max:255',
+            'type' => 'required|in:gold,silver,bronze,media,institutionnel,autre',
+            'email' => 'nullable|email|max:255',
+            'telephone' => 'nullable|string|max:50',
+            'description' => 'nullable|string',
+            'site_web' => 'nullable|url|max:255',
+            'logo' => 'nullable|image|max:2048',
+            'contribution' => 'nullable|string',
+            'montant' => 'nullable|numeric|min:0',
+        ]);
+
+        // Create the partenaire
+        $partenaireData = [
+            'nom' => $validated['nom'],
+            'type' => $validated['type'],
+            'email' => $validated['email'] ?? null,
+            'telephone' => $validated['telephone'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'site_web' => $validated['site_web'] ?? null,
+            'actif' => true,
+            'ordre' => 0,
+        ];
+
+        if ($request->hasFile('logo')) {
+            $partenaireData['logo'] = $request->file('logo')->store('partenaires/logos', 'public');
+        }
+
+        $partenaire = Partenaire::create($partenaireData);
+
+        // Attach to event using attach() method
+        $evenement->partenaires()->attach($partenaire->id_partenaire, [
+            'contribution' => $validated['contribution'] ?? null,
+            'montant' => $validated['montant'] ?? null,
+        ]);
+
+        return redirect()->route('evenements.show', $evenement)->with('success', 'Sponsor créé et ajouté à l\'événement.');
+    }
     public function detachPartenaire(Evenement $evenement, Partenaire $partenaire)
     {
         if ($this->isSuperAdmin()) {
@@ -198,11 +413,28 @@ class EvenementController extends Controller
         }
         $collab = $this->getUserCollaborateur();
         if (!$collab || $collab->role !== 'admin_entreprise' || $evenement->id_entreprise !== $collab->id_entreprise) {
-            abort(403, 'Vous ne pouvez modifier que les partenaires de vos Ã©vÃ©nements.');
+            abort(403, 'Vous ne pouvez modifier que les partenaires de vos événements.');
         }
 
         $evenement->partenaires()->detach($partenaire->id_partenaire);
-        return redirect()->route('evenements.show', $evenement)->with('success', 'Sponsor retirÃ© de l\'Ã©vÃ©nement.');
+        return redirect()->route('evenements.show', $evenement)->with('success', 'Sponsor retiré de l\'événement.');
+    }
+
+    public function toggleVisibility(Evenement $evenement)
+    {
+        if ($this->isSuperAdmin()) {
+            abort(403, 'Le super administrateur ne peut pas modifier la visibilité.');
+        }
+        $collab = $this->getUserCollaborateur();
+        if (!$collab || $collab->role !== 'admin_entreprise' || $evenement->id_entreprise !== $collab->id_entreprise) {
+            abort(403, 'Vous ne pouvez modifier que la visibilité de vos événements.');
+        }
+
+        $evenement->visibility = $evenement->visibility === 'public' ? 'private' : 'public';
+        $evenement->save();
+
+        $message = $evenement->visibility === 'public' ? 'Événement rendu visible.' : 'Événement caché.';
+        return redirect()->route('evenements.show', $evenement)->with('success', $message);
     }
 
     /**
@@ -332,7 +564,8 @@ class EvenementController extends Controller
         }
         $evenement->load('partenaires');
         $partenaires = Partenaire::where('actif', true)->orderBy('ordre')->orderBy('nom')->get();
-        return view('evenements.edit', compact('evenement', 'partenaires'));
+        $landingTemplates = Evenement::LANDING_TEMPLATES;
+        return view('evenements.edit', compact('evenement', 'partenaires', 'landingTemplates'));
     }
 
     public function update(UpdateEvenementRequest $request, Evenement $evenement)
@@ -355,7 +588,11 @@ class EvenementController extends Controller
         ]);
         $plaquettePath = $request->plaquette_pdf ? $request->plaquette_pdf->store('plaquettes') : $evenement->plaquette_pdf;
         $imagePath = $request->hasFile('image') ? $request->file('image')->store('images', 'public') : $evenement->image;
-        $evenement->update(array_merge($request->validated(), [
+        $validated = $request->validated();
+        $validated['landing_template'] = $validated['landing_template'] ?? ($evenement->landing_template ?: 'template_1');
+        $validated['landing_content'] = array_filter($validated['landing_content'] ?? [], fn ($value) => filled($value));
+
+        $evenement->update(array_merge($validated, [
             'plaquette_pdf' => $plaquettePath,
             'image' => $imagePath,
         ]));
@@ -371,6 +608,12 @@ class EvenementController extends Controller
         }
     
         return redirect()->route('evenements.index')->with('success', 'Événement mis à jour avec succès');
+    }
+
+    private function resolveLandingTemplateView(Evenement $evenement): string
+    {
+        $template = $evenement->landing_template ?: 'template_1';
+        return Evenement::LANDING_TEMPLATES[$template]['view'] ?? Evenement::LANDING_TEMPLATES['template_1']['view'];
     }
 
     public function destroy(Evenement $evenement)
